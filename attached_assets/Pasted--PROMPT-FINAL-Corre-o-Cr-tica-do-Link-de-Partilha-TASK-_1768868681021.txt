@@ -1,0 +1,155 @@
+# 🎯 PROMPT FINAL - Correção Crítica do Link de Partilha
+
+## 📝 TASK: Fix share link to open Google Maps app directly
+
+### ❌ PROBLEMA ATUAL:
+```dart
+// Link atual (ERRADO):
+final url = 'https://plus.codes/$fullCode';
+// ➡️ Abre browser (plus.codes website)
+// ❌ NÃO abre Google Maps app
+// ❌ Má experiência do utilizador
+```
+
+### ✅ SOLUÇÃO:
+```dart
+// Link correto (USAR ESTE):
+final mapsUrl = 'https://www.google.com/maps/search/?api=1&query=$fullCode';
+// ➡️ Abre Google Maps app diretamente
+// ✅ Funciona Android + iOS + Web
+// ✅ Experiência profissional
+```
+
+---
+
+## 🔧 IMPLEMENTAÇÃO COMPLETA:
+
+**Localização:** `lib/screens/home_screen.dart` (ou onde está a função `_shareLocation`)
+
+**Substituir a função de share por:**
+
+```dart
+void _shareLocation() {
+  if (_currentPlusCode == null) return;
+  
+  final fullCode = _currentPlusCode!;
+  final shortCode = _shortCode ?? fullCode;
+  final reference = _reference ?? 'Luanda';
+  
+  // ✅ LINK GOOGLE MAPS (abre app diretamente)
+  final mapsUrl = 'https://www.google.com/maps/search/?api=1&query=$fullCode';
+  
+  // ✅ Texto de partilha profissional e claro
+  final shareText = '''
+Minha morada:
+$shortCode $reference
+
+Código completo: $fullCode
+
+Abre no Google Maps:
+$mapsUrl
+'''.trim();
+
+  Share.share(shareText);
+}
+```
+
+---
+
+## ✅ VALIDAÇÃO (TESTES OBRIGATÓRIOS):
+
+Depois de implementar, testar:
+
+1. **WhatsApp:**
+   - [ ] Partilhar localização
+   - [ ] Clicar no link recebido
+   - [ ] Confirmar que abre Google Maps app (não browser)
+   - [ ] Confirmar que mostra localização correta
+
+2. **SMS:**
+   - [ ] Partilhar por SMS
+   - [ ] Clicar no link
+   - [ ] Confirmar que abre Maps app
+
+3. **Texto:**
+   - [ ] Código full está presente
+   - [ ] Short code + referência legível
+   - [ ] Link clicável
+   - [ ] Sem erros ortográficos
+
+---
+
+## 📦 COMMIT MESSAGE (depois de testar):
+
+```bash
+git add lib/screens/home_screen.dart
+git commit -m "fix: use Google Maps link for direct app opening instead of plus.codes
+
+- Changed share URL from https://plus.codes/ to Google Maps API format
+- URL: https://www.google.com/maps/search/?api=1&query={PLUS_CODE}
+- Opens Google Maps app directly on Android/iOS (not browser)
+- Improved share text format: short code + reference + full code + Maps link
+- Better UX: users expect Maps app to open automatically
+- Works universally across all platforms and messaging apps
+
+Tested on: WhatsApp, SMS
+Closes: #share-link-improvement"
+```
+
+---
+
+## 🎯 RESULTADO ESPERADO:
+
+**ANTES (plus.codes link):**
+```
+User clica link ➡️ Browser abre ➡️ plus.codes website ➡️ User confuso 😕
+```
+
+**DEPOIS (Google Maps link):**
+```
+User clica link ➡️ Google Maps app abre ➡️ Localização exata ➡️ Navegação! 🎉
+```
+
+---
+
+## 📊 IMPACTO:
+
+- ✅ **UX profissional** (como Uber, Glovo, etc)
+- ✅ **Zero fricção** (1 clique = Maps abre)
+- ✅ **Confiança** (comportamento esperado)
+- ✅ **Conversão** (mais pessoas usam corretamente)
+- ✅ **Ready para clientes B2B** (Yango, delivery apps)
+
+---
+
+## 🚀 APÓS IMPLEMENTAÇÃO:
+
+1. **Testa** (WhatsApp + SMS)
+2. **Commit + Push** (usa mensagem acima)
+3. **Atualiza versão** em `pubspec.yaml`:
+   ```yaml
+   version: 1.0.0+2  # +2 porque é segunda build
+   ```
+4. **Build teste APK:**
+   ```bash
+   flutter build apk --debug
+   ```
+5. **Ready para stores!** 🎊
+
+---
+
+## ⚡ PRIORITY: ALTA
+
+Este é o último ajuste crítico antes de publicar.
+
+**Tudo o resto está pronto:**
+- ✅ Full code sempre
+- ✅ Badge SEGURA
+- ✅ Settings completo
+- ✅ UX polida
+
+**Só falta:** Link correto → **IMPLEMENTA AGORA** → Stores amanhã! 🚀
+
+---
+
+**COPY/PASTE este prompt e implementa. Depois testa e commita!** 💪🇦🇴

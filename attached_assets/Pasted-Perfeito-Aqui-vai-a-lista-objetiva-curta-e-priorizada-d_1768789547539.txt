@@ -1,0 +1,168 @@
+Perfeito. Aqui vai a lista objetiva, curta e priorizada do que deves mudar antes de submeter a Morada AO — sem inventar mais telas nem complicar.
+
+Pensa nisto como checklist final de lançamento ✅
+
+⸻
+
+✅ LISTA DE COISAS A MUDAR / AJUSTAR (PRÉ-APP STORE)
+
+🔴 PRIORIDADE ALTA (FAZER ANTES DE SUBMETER)
+
+1️⃣ Botão Partilhar (mais importante)
+
+Problema
+	•	Não abre claramente o WhatsApp
+	•	Parece ação genérica
+	•	Não deixa claro o que será partilhado
+
+O que mudar
+	•	Usar o share sheet nativo do sistema
+	•	Garantir que WhatsApp aparece automaticamente
+
+Ação
+
+Share.share(text);
+
+Texto partilhado (padrão)
+
+Minha morada:
++97X Paranhos
+
+Abre no mapa:
+https://plus.codes/8CHH59FX+97X
+
+
+⸻
+
+2️⃣ Link de partilha
+
+Problema
+	•	Risco de partilhar short sozinho
+
+O que mudar
+	•	Link deve usar SEMPRE o Plus Code FULL
+
+Regra
+❌ https://plus.codes/+97X
+✅ https://plus.codes/8CHH59FX+97X
+
+⸻
+
+3️⃣ Hierarquia visual da morada
+
+Problema
+	•	Mapa ainda chama mais atenção do que o código
+
+O que mudar
+	•	Dar mais destaque visual ao código full
+	•	Reduzir ligeiramente o destaque do mapa
+
+Ação
+	•	Aumentar peso/tamanho do código
+	•	Map como contexto, não foco
+
+⸻
+
+4️⃣ Texto educativo (microcopy)
+
+Problema
+	•	O utilizador pode não perceber logo a diferença
+
+O que mudar
+Adicionar uma frase fixa, curta:
+
+“A morada segura funciona sempre, mesmo sem nome de rua.”
+
+⸻
+
+🟡 PRIORIDADE MÉDIA (RECOMENDADO)
+
+5️⃣ Centralização visual
+
+Problema
+	•	Conteúdo parece um pouco “espalhado”
+
+O que mudar
+	•	Centralizar melhor o bloco:
+	•	Morada segura
+	•	Morada curta
+	•	Botão copiar
+
+Nada estrutural — só alinhamento.
+
+⸻
+
+6️⃣ Definições (Settings)
+
+Problema
+	•	Pode parecer vazia
+
+O que mudar
+Adicionar apenas:
+	•	Sobre a Morada AO
+	•	Privacidade
+	•	Contacto / feedback (email)
+
+❌ Não adicionar mais opções agora.
+
+⸻
+
+7️⃣ Texto da morada curta (quando não há bairro)
+
+Problema
+	•	Pode gerar dúvida
+
+O que mudar
+Trocar para:
+
+“Podes adicionar manualmente o nome do bairro ao partilhar.”
+
+⸻
+
+🟢 PRIORIDADE BAIXA (PODE FICAR PARA V2)
+
+8️⃣ Animações leves
+	•	Transição suave do mapa
+	•	Feedback visual ao copiar
+
+⚠️ Não bloquear lançamento por isso.
+
+⸻
+
+9️⃣ Guardar última morada
+	•	Reabrir app no último local
+	•	UX melhor
+
+⸻
+
+❌ COISAS QUE NÃO DEVES MUDAR
+
+(Isto é tão importante quanto o resto)
+	•	❌ Não adicionar login
+	•	❌ Não adicionar mais telas
+	•	❌ Não adicionar feed, histórico, favoritos
+	•	❌ Não adicionar texto técnico
+	•	❌ Não complicar o fluxo
+
+⸻
+
+🧠 REGRA FINAL (PARA DECISÕES FUTURAS)
+
+Se a mudança não ajuda uma pessoa a partilhar a morada mais rápido, não entra.
+
+⸻
+
+✅ RESUMO EXECUTIVO
+	•	A app já está pronta
+	•	Mudanças são polimento, não correção
+	•	Foco total em:
+	•	Partilha
+	•	Clareza
+	•	Confiança
+
+Se quiseres, no próximo passo posso:
+	•	transformar isto numa checklist imprimível
+	•	rever o texto da App Store
+	•	ou ajudar na submissão passo a passo
+
+Diz-me como queres fechar.

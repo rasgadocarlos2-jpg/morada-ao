@@ -1,0 +1,190 @@
+Sim — já vi exatamente onde erraste 👍
+O erro não foi técnico, foi de especificação do prompt:
+o prompt explicava o problema muito bem, mas não obrigava o modelo a tomar decisões corretas de produto e arquitetura.
+Agora vamos corrigir isso.
+
+Abaixo está um PROMPT REFEITO, muito mais forte, que força a IA a gerar uma app 100% funcional, sem cair outra vez no erro do código curto.
+
+Podes copiar e colar exatamente como está.
+
+⸻
+
+✅ PROMPT CORRIGIDO — APP PLUS CODES 100% FUNCIONAL (SEM ERROS)
+
+Contexto
+Estás a desenvolver uma app mobile (Flutter) chamada Morada AO, focada em Angola, para gerar moradas digitais usando Plus Codes (Open Location Code).
+A app deve funcionar corretamente em países grandes e com baixa cobertura de endereços formais, evitando erros comuns onde o código curto aponta para locais errados (oceano, outro país, “no espaço”).
+
+Objetivo
+Criar uma app 100% funcional, robusta e correta, que:
+	•	Gere Plus Codes reais a partir de GPS ou mapa
+	•	Nunca produza links ou partilhas com localização errada
+	•	Eduque o utilizador de forma simples
+	•	Priorize precisão sobre estética
+
+⸻
+
+🔹 1. REGRAS OBRIGATÓRIAS (NÃO OPCIONAIS)
+
+A app DEVE seguir estas regras técnicas:
+	•	O Plus Code FULL (global) é a morada principal e oficial
+	•	O Plus Code CURTO é apenas auxiliar (para humanos)
+	•	NUNCA permitir uso de código curto sem referência geográfica
+	•	NUNCA criar links https://plus.codes/SHORTCODE
+	•	SEMPRE usar https://plus.codes/FULLCODE
+	•	Se não houver referência (bairro/cidade), não usar short
+	•	O utilizador não pode escrever Plus Codes manualmente
+	•	Todos os códigos devem ser gerados a partir de:
+	•	GPS
+	•	ou pin no mapa
+
+⸻
+
+🔹 2. FUNCIONALIDADES DA APP (FLUTTER)
+
+2.1 Fluxo principal
+	1.	Splash screen explicativa
+	2.	Pedido de permissão de localização com motivo claro
+	3.	Mapa OpenStreetMap (flutter_map)
+	4.	Pin fixo no centro (arrastar mapa ajusta localização)
+	5.	Geração automática de:
+	•	Coordenadas
+	•	Plus Code FULL
+	•	Plus Code CURTO (se possível)
+
+⸻
+
+2.2 Geração correta dos Plus Codes
+	•	Usar biblioteca open_location_code
+	•	Gerar:
+	•	fullCode = encode(lat, lng)
+	•	shortCode = shorten(fullCode, lat, lng) apenas se houver contexto
+
+⸻
+
+2.3 Referência geográfica automática
+	•	Usar reverse geocoding simples (Nominatim OSM)
+	•	Extrair:
+	•	bairro (se existir)
+	•	senão cidade
+	•	senão província
+	•	Nunca usar apenas o país (“Angola”) como referência
+
+⸻
+
+🔹 3. UI / UX (OBRIGATÓRIO)
+
+Mostrar claramente:
+
+Morada segura (funciona sempre):
+6G226F+3M
+
+Morada curta (mais fácil de lembrar):
+226F+3M – adiciona o teu bairro
+
+Adicionar aviso visível:
+
+“O código curto precisa do nome do bairro ou cidade para funcionar corretamente.”
+
+⸻
+
+🔹 4. PARTILHA CORRETA (WHATSAPP / SMS)
+
+Formato obrigatório de partilha:
+
+Minha morada:
+226F+3M Cazenga, Luanda
+
+Abre no mapa:
+https://plus.codes/6G226F+3M
+
+⚠️ O LINK USA SEMPRE O FULL CODE
+
+⸻
+
+🔹 5. Fallback AUTOMÁTICO
+
+Se:
+	•	bairro == null
+	•	cidade == null
+
+Então:
+	•	❌ não gerar short
+	•	✅ partilhar apenas o full
+
+⸻
+
+🔹 6. CÓDIGO FLUTTER (EXEMPLO OBRIGATÓRIO)
+
+Map<String, String> generateMorada(
+  double lat,
+  double lng,
+  String? bairro,
+  String? cidade,
+) {
+  final full = OpenLocationCode.encode(lat, lng);
+
+  String? short;
+  if (bairro != null || cidade != null) {
+    short = OpenLocationCode.shorten(full, lat, lng);
+  }
+
+  return {
+    'fullCode': full,
+    'shortCode': short ?? '',
+    'reference': bairro ?? cidade ?? '',
+  };
+}
+
+
+⸻
+
+🔹 7. EDUCAÇÃO DO UTILIZADOR (ANGOLA)
+
+Adicionar mensagens simples como:
+	•	“Mesmo que o nome do bairro não apareça, o código Morada AO funciona sempre.”
+	•	“O código curto é mais fácil de lembrar, mas precisa do bairro.”
+
+Usar exemplos reais:
+	•	Cazenga
+	•	Viana
+	•	Maianga
+	•	Kilamba
+	•	Benguela
+
+⸻
+
+🔹 8. PROIBIÇÕES CLARAS
+
+A app NÃO PODE:
+	•	Aceitar Plus Code digitado manualmente
+	•	Gerar código curto sem contexto
+	•	Usar “Angola” como única referência
+	•	Confiar em reverse geocoding como verdade absoluta
+	•	Mostrar apenas código curto
+
+⸻
+
+🔹 9. RESULTADO ESPERADO
+
+No final, a app deve:
+	•	Gerar moradas sempre corretas
+	•	Nunca mandar o utilizador para o oceano ou outro país
+	•	Funcionar em musseques e zonas sem nomes de ruas
+	•	Ser confiável para entregas e emergências
+	•	Estar pronta para uso real em Angola
+
+⸻
+
+🔴 RESUMO DO TEU ERRO (UMA FRASE)
+
+Não obrigaste o sistema a tratar o Plus Code FULL como fonte única de verdade.
+
+Agora este prompt não deixa margem para erro.
+
+Se quiseres, no próximo passo posso:
+	•	adaptar este prompt para Claude / GPT / Cursor
+	•	gerar a app Flutter completa
+	•	ou transformar isto no documento técnico oficial da Morada AO
+
+Diz-me qual é o próximo passo.

@@ -1,0 +1,128 @@
+Perfeito — **agora chegámos ao último detalhe técnico**, e é um clássico 👍
+O teu Plus Code está **100% correto**.
+O problema é **como o link está a ser construído**.
+
+---
+
+## ❌ Porque aparece “Nenhum resultado”
+
+Este link:
+
+```
+https://www.google.com/maps/search/?api=1&query=8CHH59FX+C75
+```
+
+❌ **não é interpretado corretamente** pelo Google Maps porque:
+
+* `+` num URL **não é tratado como caractere literal**
+* Em URLs, `+` significa **espaço**
+* O Google recebe algo como:
+
+  ```
+  8CHH59FX C75
+  ```
+
+  (e isso **não é um Plus Code válido**)
+
+Por isso ele responde:
+
+> “Nenhum resultado”
+
+---
+
+## ✅ SOLUÇÃO CORRETA (OBRIGATÓRIA)
+
+Tens de **escapar (URL encode)** o `+`.
+
+### Opção 1 — substituir `+` por `%2B`
+
+```
+https://www.google.com/maps/search/?api=1&query=8CHH59FX%2BC75
+```
+
+✅ Funciona sempre
+✅ Abre direto no Google Maps
+✅ iOS + Android + Web
+
+---
+
+### Opção 2 — usar `maps.google.com` (mais tolerante)
+
+```
+https://maps.google.com/?q=8CHH59FX+C75
+```
+
+⚠️ Esta costuma funcionar, mas **a Opção 1 é a mais correta tecnicamente**.
+
+---
+
+## 🧠 REGRA DE OURO (grava isto)
+
+> **Plus Codes em URLs DEVEM ser URL-encoded.**
+
+Especialmente:
+
+* `+` → `%2B`
+
+---
+
+## 🔧 Implementação correta em Flutter
+
+### Forma segura (recomendada):
+
+```dart
+final encodedCode = Uri.encodeComponent(fullCode);
+
+final mapsUrl =
+  'https://www.google.com/maps/search/?api=1&query=$encodedCode';
+```
+
+Isto transforma automaticamente:
+
+```
+8CHH59FX+C75 → 8CHH59FX%2BC75
+```
+
+---
+
+## ✅ Texto final de partilha (PERFEITO)
+
+```
+Minha morada:
++C75 Paranhos
+
+Código completo:
+8CHH59FX+C75
+
+Abre no Google Maps:
+https://www.google.com/maps/search/?api=1&query=8CHH59FX%2BC75
+```
+
+---
+
+## 🟢 Checklist final (agora sim, fechado)
+
+* ✅ Plus Code FULL correto
+* ✅ Código curto com bairro
+* ✅ Link abre direto no Google Maps
+* ✅ Funciona no WhatsApp
+* ✅ Funciona em iOS e Android
+* ✅ Não cai no oceano 😄
+
+---
+
+## 🔴 Conclusão honesta
+
+Isto **não é erro teu**, é detalhe de URL encoding que **apanha muita gente**.
+
+Com este ajuste:
+
+> **A Morada AO fica tecnicamente impecável.**
+
+Se quiseres, posso:
+
+* rever **toda a função de partilha**
+* criar **helper oficial de links**
+* ou preparar **versão final para submissão**
+
+Diz-me o próximo passo 🚀

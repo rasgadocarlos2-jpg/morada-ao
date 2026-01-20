@@ -1,0 +1,34 @@
+# Replit (NUNCA commitar)
+.config/
+.replit
+replit.nix
+.upm/
+.cache/
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+
+# Node
+node_modules/
+npm-debug.*
+yarn-error.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build
+build/
+*.log
