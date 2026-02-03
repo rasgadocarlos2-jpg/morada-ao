@@ -32,8 +32,8 @@ lugar, mesmo sem internet.
 
 ## 🛠️ Tech Stack
 
-- Flutter
-- Dart
+- React Native
+- Expo
 - OpenStreetMap
 - Plus Codes Library
 
