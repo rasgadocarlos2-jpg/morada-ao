@@ -12,12 +12,13 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.moradaao.app",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Morada AO precisa da tua localização para gerar o código da tua morada digital."
+        "NSLocationWhenInUseUsageDescription": "Morada AO precisa da tua localização para gerar o código da tua morada digital.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#D62828",
+        "backgroundColor": "#0D1A2A",
         "foregroundImage": "./assets/images/icon.png"
       },
       "edgeToEdgeEnabled": true,
@@ -25,7 +26,9 @@
       "package": "com.moradaao.app",
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "web": {
@@ -39,9 +42,9 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#D62828",
+          "backgroundColor": "#0D1A2A",
           "dark": {
-            "backgroundColor": "#1A1A1A"
+            "backgroundColor": "#0D1A2A"
           }
         }
       ],
@@ -51,10 +54,19 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Morada AO precisa da tua localização para gerar o código da tua morada digital."
         }
-      ]
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-status-bar",
+      "expo-sharing"
     ],
     "experiments": {
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "98350fc8-3a34-40f8-80d5-4865dc6231b3"
+      }
     }
   }
 }

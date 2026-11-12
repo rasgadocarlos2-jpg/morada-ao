@@ -1,10 +1,18 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const KEYS = {
-  HAS_SEEN_ONBOARDING: "morada_ao_has_seen_onboarding",
+  HAS_SEEN_ONBOARDING: "morada_ao_has_seen_onboarding_v2",
   SAVED_ADDRESSES: "morada_ao_saved_addresses",
   LAST_LOCATION: "morada_ao_last_location",
 };
+
+export type SavedAddressPreset =
+  | "home"
+  | "work"
+  | "family"
+  | "friend"
+  | "business"
+  | "other";
 
 export interface SavedAddress {
   id: string;
@@ -13,7 +21,8 @@ export interface SavedAddress {
   reference: string;
   latitude: number;
   longitude: number;
-  label?: string;
+  label: string;
+  preset: SavedAddressPreset;
   createdAt: string;
 }
 
@@ -37,23 +46,49 @@ export async function setHasSeenOnboarding(value: boolean): Promise<void> {
 export async function getSavedAddresses(): Promise<SavedAddress[]> {
   try {
     const value = await AsyncStorage.getItem(KEYS.SAVED_ADDRESSES);
-    return value ? JSON.parse(value) : [];
+    if (!value) return [];
+    const parsed = JSON.parse(value) as SavedAddress[];
+    return parsed.map((a) => ({
+      ...a,
+      preset: a.preset ?? ("other" as SavedAddressPreset),
+      label: a.label || "Morada",
+    }));
   } catch {
     return [];
   }
 }
 
-export async function saveAddress(address: SavedAddress): Promise<void> {
-  try {
-    const addresses = await getSavedAddresses();
-    const exists = addresses.some((a) => a.id === address.id);
-    if (!exists) {
-      addresses.unshift(address);
-      await AsyncStorage.setItem(KEYS.SAVED_ADDRESSES, JSON.stringify(addresses));
-    }
-  } catch {
-    console.error("Failed to save address");
+export async function saveAddress(
+  address: Omit<SavedAddress, "id" | "createdAt"> &
+    Partial<Pick<SavedAddress, "id" | "createdAt">>
+): Promise<SavedAddress> {
+  const addresses = await getSavedAddresses();
+  const id = address.id ?? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const createdAt = address.createdAt ?? new Date().toISOString();
+
+  const next: SavedAddress = {
+    id,
+    createdAt,
+    fullCode: address.fullCode,
+    shortCode: address.shortCode,
+    reference: address.reference,
+    latitude: address.latitude,
+    longitude: address.longitude,
+    label: address.label,
+    preset: address.preset,
+  };
+
+  const existingIdx = addresses.findIndex(
+    (a) => a.id === id || a.fullCode === next.fullCode
+  );
+  if (existingIdx >= 0) {
+    addresses[existingIdx] = { ...addresses[existingIdx], ...next };
+  } else {
+    addresses.unshift(next);
   }
+
+  await AsyncStorage.setItem(KEYS.SAVED_ADDRESSES, JSON.stringify(addresses));
+  return next;
 }
 
 export async function deleteAddress(id: string): Promise<void> {
@@ -64,6 +99,13 @@ export async function deleteAddress(id: string): Promise<void> {
   } catch {
     console.error("Failed to delete address");
   }
+}
+
+export async function getAddressByPreset(
+  preset: SavedAddressPreset
+): Promise<SavedAddress | null> {
+  const all = await getSavedAddresses();
+  return all.find((a) => a.preset === preset) ?? null;
 }
 
 export interface LastLocation {

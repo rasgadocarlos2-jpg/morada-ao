@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://moradaao.com/sitemap.xml

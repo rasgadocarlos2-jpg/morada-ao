@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Morada AO brand symbol. 7x7 grid, arms 1x4 u. Navy #0D1A2A tile + orange #EA5D1E plus. -->
+  <rect width="1024" height="1024" fill="#0D1A2A"/>
+  <rect x="439" y="219" width="146" height="586" fill="#EA5D1E"/>
+  <rect x="219" y="439" width="586" height="146" fill="#EA5D1E"/>
+</svg>

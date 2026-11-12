@@ -1,5 +1,5 @@
 import React, { forwardRef } from "react";
-import MapView, { PROVIDER_DEFAULT } from "react-native-maps";
+import MapView, { PROVIDER_DEFAULT, MapType } from "react-native-maps";
 
 interface MapViewComponentProps {
   style?: any;
@@ -13,7 +13,7 @@ interface MapViewComponentProps {
   showsUserLocation?: boolean;
   showsMyLocationButton?: boolean;
   showsCompass?: boolean;
-  mapType?: string;
+  mapType?: MapType;
   userInterfaceStyle?: "light" | "dark";
   children?: React.ReactNode;
 }

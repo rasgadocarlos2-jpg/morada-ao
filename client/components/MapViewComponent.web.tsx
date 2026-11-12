@@ -17,7 +17,7 @@ interface MapViewComponentProps {
   showsUserLocation?: boolean;
   showsMyLocationButton?: boolean;
   showsCompass?: boolean;
-  mapType?: string;
+  mapType?: "standard" | "satellite" | "hybrid" | "terrain" | "none" | "mutedStandard";
   userInterfaceStyle?: "light" | "dark";
   children?: React.ReactNode;
 }

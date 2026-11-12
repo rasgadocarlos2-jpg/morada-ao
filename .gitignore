@@ -32,3 +32,19 @@ Thumbs.db
 # Build
 build/
 *.log
+
+# Firebase credentials (NEVER COMMIT)
+firebase/google-services.json
+firebase/GoogleService-Info.plist
+google-services.json
+GoogleService-Info.plist
+
+# EAS / Store credentials
+google-play-service-account.json
+*.p8
+*.p12
+*.mobileprovision
+*.keystore
+
+# EAS local
+.easignore.local

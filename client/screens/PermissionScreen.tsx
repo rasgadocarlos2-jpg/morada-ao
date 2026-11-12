@@ -9,6 +9,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Colors } from "@/constants/theme";
+import { track } from "@/lib/analytics";
 
 interface PermissionScreenProps {
   onPermissionGranted: () => void;
@@ -21,6 +22,10 @@ export default function PermissionScreen({ onPermissionGranted }: PermissionScre
 
   const handleRequestPermission = async () => {
     const result = await requestPermission();
+    track("location_permission_response", {
+      granted: result.granted,
+      can_ask_again: result.canAskAgain,
+    });
     if (result.granted) {
       onPermissionGranted();
     }
@@ -68,8 +73,26 @@ export default function PermissionScreen({ onPermissionGranted }: PermissionScre
           </ThemedText>
 
           <ThemedText style={[styles.description, { color: theme.textSecondary }]}>
-            Para gerar o código da tua morada digital, a app precisa saber onde estás. A tua localização nunca será partilhada sem a tua permissão.
+            Para gerar o código da tua morada digital.
           </ThemedText>
+
+          <View style={styles.bullets}>
+            <Bullet
+              icon="check-circle"
+              text="Processada apenas no telemóvel"
+              theme={theme}
+            />
+            <Bullet
+              icon="check-circle"
+              text="Nunca enviada para servidores"
+              theme={theme}
+            />
+            <Bullet
+              icon="check-circle"
+              text="Podes revogar a qualquer momento"
+              theme={theme}
+            />
+          </View>
         </Animated.View>
 
         {isDeniedPermanently ? (
@@ -111,6 +134,25 @@ export default function PermissionScreen({ onPermissionGranted }: PermissionScre
   );
 }
 
+function Bullet({
+  icon,
+  text,
+  theme,
+}: {
+  icon: keyof typeof Feather.glyphMap;
+  text: string;
+  theme: any;
+}) {
+  return (
+    <View style={styles.bulletRow}>
+      <Feather name={icon} size={16} color={Colors.light.success} />
+      <ThemedText style={[styles.bulletText, { color: theme.text }]}>
+        {text}
+      </ThemedText>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -138,6 +180,22 @@ const styles = StyleSheet.create({
   description: {
     textAlign: "center",
     paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  bullets: {
+    alignSelf: "stretch",
+    gap: Spacing.md,
+    marginTop: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+  },
+  bulletRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  bulletText: {
+    fontSize: 14,
+    flex: 1,
   },
   deniedContainer: {
     marginTop: Spacing["2xl"],

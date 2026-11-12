@@ -86,7 +86,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
           style={({ pressed }) => [
             styles.button,
             {
-              backgroundColor: Colors.light.primary,
+              backgroundColor: theme.primary,
               opacity: pressed ? 0.9 : 1,
               transform: [{ scale: pressed ? 0.98 : 1 }],
             },

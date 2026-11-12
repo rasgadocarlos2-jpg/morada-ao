@@ -32,10 +32,22 @@ lugar, mesmo sem internet.
 
 ## 🛠️ Tech Stack
 
-- React Native
-- Expo
-- OpenStreetMap
-- Plus Codes Library
+- **Expo** (SDK 54, New Architecture, React Compiler)
+- **React Native** 0.81 + **TypeScript**
+- **React Navigation** (stack)
+- **react-native-maps** + OpenStreetMap tiles
+- **Plus Codes** (open-location-code)
+- **Firebase** (Crashlytics, Analytics, Remote Config, FCM)
+- **PostHog** (product analytics + session replay)
+- **EAS Build + Submit** (Android + iOS)
+
+## 📖 Documentação
+
+- [SETUP-MORADA-AO.md](./SETUP-MORADA-AO.md) — setup de dev
+- [FIREBASE-SETUP.md](./FIREBASE-SETUP.md) — configurar Firebase
+- [POSTHOG-SETUP.md](./POSTHOG-SETUP.md) — configurar PostHog
+- [STORE-SUBMISSION.md](./STORE-SUBMISSION.md) — checklist das lojas
+- [PRIVACY.md](./PRIVACY.md) — política de privacidade
 
 ## 🤝 Contribuir
 

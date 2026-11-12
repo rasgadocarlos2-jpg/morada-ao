@@ -1,34 +1,105 @@
-import React from "react";
-import { View, StyleSheet, Image, Pressable } from "react-native";
+import React, { useRef, useState, ComponentRef } from "react";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  ScrollView,
+  Dimensions,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, {
-  FadeInDown,
-  FadeInUp,
-} from "react-native-reanimated";
 import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 
 import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/Button";
+import { OnboardingArt } from "@/components/OnboardingArt";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Colors } from "@/constants/theme";
 import { setHasSeenOnboarding } from "@/lib/storage";
+import { track } from "@/lib/analytics";
 
 interface OnboardingScreenProps {
   onComplete: () => void;
 }
 
+type Variant = "map" | "offline" | "share";
+
+interface Slide {
+  variant: Variant;
+  title: string;
+  description: string;
+  features: Array<{ icon: keyof typeof Feather.glyphMap; text: string }>;
+}
+
+const SLIDES: Slide[] = [
+  {
+    variant: "map",
+    title: "A tua morada digital",
+    description:
+      "Em qualquer canto de Angola, mesmo sem nome de rua, há sempre uma morada. Nós ajudamos-te a encontrá-la.",
+    features: [
+      { icon: "map-pin", text: "Preciso ao metro" },
+      { icon: "zap", text: "Gerado em segundos" },
+    ],
+  },
+  {
+    variant: "offline",
+    title: "Funciona sempre",
+    description:
+      "Usa Plus Codes do Google — um sistema internacional. Depois do primeiro uso, continua a funcionar offline.",
+    features: [
+      { icon: "wifi-off", text: "Sem internet depois da 1ª vez" },
+      { icon: "globe", text: "Cobertura em toda Angola" },
+    ],
+  },
+  {
+    variant: "share",
+    title: "Partilha com qualquer um",
+    description:
+      "Manda a tua morada por WhatsApp, SMS ou cartão visual. Perfeito para entregas, Uber, emergências e visitas.",
+    features: [
+      { icon: "message-circle", text: "WhatsApp, SMS, email" },
+      { icon: "image", text: "Também em imagem partilhável" },
+    ],
+  },
+];
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
 export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const [index, setIndex] = useState(0);
+  const isLast = index === SLIDES.length - 1;
 
-  const handleStart = async () => {
+  const finish = async () => {
     await setHasSeenOnboarding(true);
+    track("onboarding_completed", { slide_reached: index + 1 });
     onComplete();
   };
 
+  const handleNext = () => {
+    Haptics.selectionAsync();
+    if (isLast) {
+      finish();
+    } else {
+      const next = index + 1;
+      scrollRef.current?.scrollTo({ x: SCREEN_WIDTH * next, animated: true });
+      setIndex(next);
+    }
+  };
+
   const handleSkip = async () => {
-    await setHasSeenOnboarding(true);
-    onComplete();
+    track("onboarding_skipped", { slide_reached: index + 1 });
+    await finish();
+  };
+
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const next = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+    if (next !== index) setIndex(next);
   };
 
   return (
@@ -38,99 +109,111 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         onPress={handleSkip}
         hitSlop={20}
       >
-        <ThemedText style={{ color: theme.textSecondary }}>Saltar</ThemedText>
+        <ThemedText style={{ color: theme.textSecondary, fontWeight: "500" }}>
+          Saltar
+        </ThemedText>
       </Pressable>
 
-      <View style={[styles.content, { paddingTop: insets.top + Spacing["5xl"] }]}>
-        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-          <Image
-            source={require("../../assets/images/onboarding-map.png")}
-            style={styles.illustration}
-            resizeMode="contain"
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={handleScroll}
+        style={styles.scroll}
+      >
+        {SLIDES.map((slide, i) => (
+          <SlideView
+            key={i}
+            slide={slide}
+            topInset={insets.top}
+            active={i === index}
           />
-        </Animated.View>
+        ))}
+      </ScrollView>
 
-        <Animated.View
-          style={styles.textContent}
-          entering={FadeInUp.delay(400).duration(600)}
-        >
-          <View style={styles.iconBadge}>
-            <View style={[styles.iconCircle, { backgroundColor: Colors.light.primary }]}>
-              <Feather name="map-pin" size={24} color="#FFFFFF" />
-            </View>
-          </View>
-
-          <ThemedText type="h1" style={styles.headline}>
-            A tua morada digital
-          </ThemedText>
-
-          <ThemedText style={[styles.description, { color: theme.textSecondary }]}>
-            Em Angola, muitas zonas não têm nomes de ruas. Morada AO cria um código único para qualquer localização.
-          </ThemedText>
-
-          <View style={styles.features}>
-            <FeatureItem
-              icon="check-circle"
-              text="Funciona em qualquer lugar de Angola"
-              color={theme.success}
-            />
-            <FeatureItem
-              icon="share-2"
-              text="Partilha fácil por WhatsApp ou SMS"
-              color={theme.success}
-            />
-            <FeatureItem
-              icon="navigation"
-              text="Perfeito para entregas e emergências"
-              color={theme.success}
-            />
-          </View>
-        </Animated.View>
-      </View>
-
-      <Animated.View
+      <View
         style={[
           styles.footer,
           { paddingBottom: insets.bottom + Spacing.xl },
         ]}
-        entering={FadeInUp.delay(600).duration(600)}
       >
+        <View style={styles.dots}>
+          {SLIDES.map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.dot,
+                {
+                  backgroundColor: i === index ? theme.primary : theme.border,
+                  width: i === index ? 24 : 8,
+                },
+              ]}
+            />
+          ))}
+        </View>
+
         <Button
-          onPress={handleStart}
-          style={[styles.button, { backgroundColor: Colors.light.primary }]}
+          onPress={handleNext}
+          style={[styles.button, { backgroundColor: theme.primary }]}
         >
-          Começar
+          {isLast ? "Vamos a isso" : "Continuar"}
         </Button>
-      </Animated.View>
+      </View>
     </View>
   );
 }
 
-function FeatureItem({
-  icon,
-  text,
-  color,
+function SlideView({
+  slide,
+  topInset,
+  active,
 }: {
-  icon: keyof typeof Feather.glyphMap;
-  text: string;
-  color: string;
+  slide: Slide;
+  topInset: number;
+  active: boolean;
 }) {
   const { theme } = useTheme();
 
   return (
-    <View style={styles.featureItem}>
-      <Feather name={icon} size={18} color={color} />
-      <ThemedText style={[styles.featureText, { color: theme.textSecondary }]}>
-        {text}
-      </ThemedText>
+    <View
+      style={[
+        styles.slide,
+        { width: SCREEN_WIDTH, paddingTop: topInset + Spacing["4xl"] },
+      ]}
+    >
+      <View>
+        <OnboardingArt variant={slide.variant} />
+      </View>
+
+      <View style={styles.textContent}>
+        <ThemedText type="h1" style={styles.headline}>
+          {slide.title}
+        </ThemedText>
+
+        <ThemedText style={[styles.description, { color: theme.textSecondary }]}>
+          {slide.description}
+        </ThemedText>
+
+        <View style={styles.features}>
+          {slide.features.map((f, i) => (
+            <View key={i} style={styles.featureItem}>
+              <View style={[styles.featureIcon, { backgroundColor: theme.iconBg }]}>
+                <Feather name={f.icon} size={14} color={theme.primary} />
+              </View>
+              <ThemedText style={[styles.featureText, { color: theme.text }]}>
+                {f.text}
+              </ThemedText>
+            </View>
+          ))}
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   skipButton: {
     position: "absolute",
     right: Spacing.lg,
@@ -138,28 +221,15 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
   },
-  content: {
-    flex: 1,
+  scroll: { flex: 1 },
+  slide: {
     paddingHorizontal: Spacing.xl,
-  },
-  illustration: {
-    width: "100%",
-    height: 220,
-    alignSelf: "center",
-    marginBottom: Spacing["2xl"],
+    alignItems: "center",
   },
   textContent: {
     alignItems: "center",
-  },
-  iconBadge: {
-    marginBottom: Spacing.lg,
-  },
-  iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
+    paddingHorizontal: Spacing.sm,
+    width: "100%",
   },
   headline: {
     textAlign: "center",
@@ -167,26 +237,49 @@ const styles = StyleSheet.create({
   },
   description: {
     textAlign: "center",
-    marginBottom: Spacing["2xl"],
-    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.xl,
+    fontSize: 16,
+    lineHeight: 24,
   },
   features: {
     alignSelf: "stretch",
-    gap: Spacing.md,
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
   },
   featureItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.md,
+    gap: Spacing.sm,
+  },
+  featureIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
   },
   featureText: {
     flex: 1,
+    fontSize: 14,
+    fontWeight: "500",
   },
   footer: {
     paddingHorizontal: Spacing.xl,
     paddingTop: Spacing.lg,
+    gap: Spacing.xl,
+  },
+  dots: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+  },
+  dot: {
+    height: 8,
+    borderRadius: 4,
   },
   button: {
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.full,
   },
 });

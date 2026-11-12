@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Splash foreground: orange + on transparent, shown over navy backgroundColor. -->
+  <rect x="220" y="85" width="72" height="342" fill="#EA5D1E"/>
+  <rect x="85" y="220" width="342" height="72" fill="#EA5D1E"/>
+</svg>

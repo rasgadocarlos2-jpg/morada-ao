@@ -1,328 +1,151 @@
-# 🛠️ Setup Guide - Morada AO
+# 🛠️ Setup Guide — Morada AO
 
-Este guia ajuda-te a configurar o ambiente de desenvolvimento.
+Guia para preparar o ambiente de desenvolvimento da app **Morada AO**.
+A app usa **Expo + React Native + TypeScript** (não Flutter).
+
+---
 
 ## 📋 Pré-requisitos
 
-### Ferramentas necessárias:
+- [Node.js 20+](https://nodejs.org/)
 - [Git](https://git-scm.com/downloads)
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) (versão 3.0 ou superior)
-- [Android Studio](https://developer.android.com/studio) (para Android)
-- [Xcode](https://developer.apple.com/xcode/) (para iOS, apenas Mac)
-- [VS Code](https://code.visualstudio.com/) (recomendado)
+- [Expo CLI](https://docs.expo.dev/) — já incluído via `npx`
+- Conta [Expo (EAS)](https://expo.dev/) — para builds de dev e produção
+- Para iOS: Mac com Xcode 15+
+- Para Android: Android Studio ou um device físico com Expo Go/Dev Client
 
-### VS Code Extensions:
-- Flutter
-- Dart
+Opcional mas recomendado:
+- VS Code com as extensões: ESLint, Prettier, React Native Tools
 
 ---
 
-## 🚀 Setup Rápido
-
-### 1. Fork e Clone
+## 🚀 Setup rápido
 
 ```bash
-# Fork o repo no GitHub (botão "Fork" no canto superior direito)
-
-# Clone o teu fork
-git clone https://github.com/[teu-username]/morada-ao.git
+# 1. Clonar
+git clone https://github.com/rasgadocarlos2-jpg/morada-ao.git
 cd morada-ao
 
-# Adiciona o repo original como upstream
-git remote add upstream https://github.com/rasgadocarlos2-jpg/morada-ao.git
+# 2. Instalar dependências
+npm install
 
-# Verifica os remotes
-git remote -v
+# 3. Login no EAS (se vais fazer builds)
+npx eas login
+
+# 4. Correr a app em dev
+npx expo start
 ```
 
-### 2. Verifica Flutter
-
-```bash
-# Verifica se Flutter está instalado corretamente
-flutter doctor
-
-# Se houver problemas, resolve-os antes de continuar
-```
-
-### 3. Instala Dependências
-
-```bash
-# Instala packages do projeto
-flutter pub get
-```
-
-### 4. Executa a App
-
-```bash
-# Lista dispositivos disponíveis
-flutter devices
-
-# Executa no dispositivo/emulador
-flutter run
-
-# Ou especifica dispositivo
-flutter run -d [device-id]
-```
+Depois escolhe no terminal: `a` (Android), `i` (iOS simulator), ou escaneia o QR code com Expo Go.
 
 ---
 
-## 🌿 Workflow de Desenvolvimento
+## 🔑 Variáveis de ambiente
 
-### Criar branch para trabalho
-
-```bash
-# Atualiza main
-git checkout main
-git pull upstream main
-
-# Cria nova branch
-git checkout -b feature/nome-da-feature
-# ou
-git checkout -b fix/nome-do-bug
-```
-
-### Fazer mudanças
+Cria um `.env` na raiz (não comitado) com:
 
 ```bash
-# 1. Edita os ficheiros
-# 2. Testa localmente: flutter run
-# 3. Formata código: flutter format .
-# 4. Adiciona mudanças
-
-git add .
-
-# 5. Commit com mensagem descritiva
-git commit -m "feat: adiciona funcionalidade X"
-
-# 6. Push para o teu fork
-git push origin feature/nome-da-feature
+EXPO_PUBLIC_POSTHOG_API_KEY=phc_xxxxxxxxxxxx
+EXPO_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
 ```
 
-### Criar Pull Request
-
-1. Vai ao teu fork no GitHub
-2. Clica em "Compare & pull request"
-3. Preenche o template
-4. Submete!
+O Firebase não usa env vars — usa os ficheiros `google-services.json` (Android) e `GoogleService-Info.plist` (iOS). Ver [FIREBASE-SETUP.md](./FIREBASE-SETUP.md).
 
 ---
 
-## 🧪 Testar
+## 🏗️ Builds nativos
 
-### Testes automáticos
+A app usa pacotes nativos (`@react-native-firebase/*`, `posthog-react-native-session-replay`), por isso **não funciona em Expo Go** — tens de criar um **dev client**:
 
 ```bash
-# Executa testes unitários
-flutter test
-
-# Executa testes com coverage
-flutter test --coverage
+# Primeira vez (gera um APK/IPA de dev que inclui os módulos nativos)
+npx eas build --profile development --platform android
+npx eas build --profile development --platform ios
 ```
 
-### Testes manuais
-
-**Checklist básico:**
-- [ ] App abre sem erros
-- [ ] GPS funciona
-- [ ] Plus Code gera corretamente
-- [ ] Partilha funciona (WhatsApp/SMS)
-- [ ] Mapa carrega
-- [ ] Performance aceitável
-
-**Teste contexto angolano:**
-- [ ] Testa com conexão 3G lenta
-- [ ] Testa em Android antigo (se possível)
-- [ ] Valida em localizações de Luanda
-- [ ] Testa modo offline
+Instala o build no device e depois corre `npx expo start --dev-client` para o Metro.
 
 ---
 
-## 🐛 Debug
-
-### Hot Reload
-```bash
-# Durante execução:
-# r - Hot reload (rápido)
-# R - Hot restart (completo)
-# q - Quit
-```
-
-### Debug Logs
-```bash
-# Vê logs em tempo real
-flutter logs
-
-# ou no VS Code:
-# F5 - Start debugging
-# Debug Console mostra logs
-```
-
----
-
-## 📁 Estrutura do Projeto
+## 📁 Estrutura do projeto
 
 ```
 morada-ao/
-├── lib/
-│   ├── main.dart              # Entry point
-│   ├── screens/               # Telas da app
-│   ├── widgets/               # Componentes reutilizáveis
-│   ├── models/                # Modelos de dados
-│   ├── services/              # Serviços (GPS, etc)
-│   └── utils/                 # Utilidades
-├── assets/                    # Imagens, ícones
-├── test/                      # Testes
-├── android/                   # Configuração Android
-├── ios/                       # Configuração iOS
-├── pubspec.yaml               # Dependências
-└── README.md
+├── client/
+│   ├── App.tsx                 # Entry point
+│   ├── index.js
+│   ├── screens/                # Telas (Map, Onboarding, Permission, Settings)
+│   ├── components/             # Componentes partilhados
+│   ├── navigation/             # React Navigation
+│   ├── constants/              # Theme, cores, spacing
+│   ├── hooks/                  # Custom hooks
+│   └── lib/                    # Plus Codes, geocoding, analytics, storage
+├── server/                     # Express server (landing page / API opcional)
+├── shared/                     # Tipos partilhados cliente/servidor
+├── assets/images/              # Ícones, splash, ilustrações
+├── firebase/                   # google-services.json / GoogleService-Info.plist (gitignore)
+├── app.json                    # Config Expo
+├── eas.json                    # Config EAS (dev, preview, production)
+└── package.json
 ```
 
 ---
 
-## ⚠️ Troubleshooting
-
-### Problema: flutter doctor mostra erros
+## 🧪 Verificações antes de commit
 
 ```bash
-# Aceita licenças Android
-flutter doctor --android-licenses
+# TypeScript
+npm run check:types
 
-# Limpa e reinstala
-flutter clean
-flutter pub get
+# Lint
+npm run lint
+
+# Formatar
+npm run format
 ```
 
-### Problema: App não instala no dispositivo
+---
+
+## 🚢 Submeter às lojas
+
+Ver [STORE-SUBMISSION.md](./STORE-SUBMISSION.md) para o checklist completo.
+
+Resumo:
 
 ```bash
-# Verifica dispositivos conectados
-flutter devices
+# Build de produção
+npx eas build --profile production --platform all
 
-# Limpa build
-flutter clean
-
-# Rebuild
-flutter run
+# Submeter
+npx eas submit --profile production --platform all
 ```
 
-### Problema: Erro de packages
+---
 
+## 🐛 Troubleshooting
+
+**`npx expo start` dá erro de Metro cache**
 ```bash
-# Limpa cache
-flutter pub cache repair
-
-# Remove e reinstala
-rm pubspec.lock
-flutter pub get
+npx expo start --clear
 ```
 
-### Problema: Hot reload não funciona
-
+**App crash depois de instalar packages Firebase**
+Precisas de rebuilt o dev client — Firebase é código nativo:
 ```bash
-# Faz hot restart (R)
-# ou restart completo:
-flutter run
+npx eas build --profile development --platform android --clear-cache
 ```
+
+**TypeScript: Cannot find module '@/lib/...'**
+Verifica `babel.config.js` e `tsconfig.json` — o alias `@/*` deve apontar para `client/*`.
+
+**Mapa não aparece em iOS**
+Verifica que fizeste build com o dev client (não Expo Go) e que tens Google Maps SDK configurado se usas `provider="google"`.
 
 ---
 
-## 🇦🇴 Testar em Contexto Angolano
+## 🤝 Contribuir
 
-### Simulação de conexão lenta:
-**Android Studio:**
-1. AVD Manager → Settings
-2. Network Speed → EDGE (200 kbps)
-
-**Chrome DevTools (para debug web):**
-1. F12 → Network
-2. Throttling → Slow 3G
-
-### Localizações para testar:
-```dart
-// Luanda (Marginal)
--8.8159, 13.2306
-
-// Cazenga
--8.8739, 13.2286
-
-// Viana
--8.9230, 13.3770
-
-// Benguela
--12.5763, 13.4055
-```
-
----
-
-## 💡 Boas Práticas
-
-### Antes de commit:
-```bash
-# 1. Formata código
-flutter format .
-
-# 2. Analisa código
-flutter analyze
-
-# 3. Executa testes
-flutter test
-
-# 4. Verifica build
-flutter build apk --debug
-```
-
-### Mensagens de commit:
-Usa [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-feat: adiciona partilha via WhatsApp
-fix: corrige bug GPS em Luanda
-docs: atualiza README
-style: formata código
-refactor: simplifica geração de código
-test: adiciona testes de GPS
-```
-
----
-
-## 📚 Recursos
-
-### Documentação:
-- [Flutter Docs](https://flutter.dev/docs)
-- [Dart Docs](https://dart.dev/guides)
-- [Plus Codes](https://plus.codes/)
-
-### Tutoriais:
-- [Flutter Codelabs](https://flutter.dev/docs/codelabs)
-- [Flutter YouTube](https://www.youtube.com/c/flutterdev)
-
-### Comunidade:
-- [GitHub Issues](https://github.com/rasgadocarlos2-jpg/morada-ao/issues)
-- Email: carlos@rasgadolabs.com
-- Instagram: [@rasgadolabs](https://instagram.com/rasgadolabs)
-
----
-
-## 🎯 Próximos Passos
-
-Depois de configurar:
-
-1. Explora o código
-2. Lê [CONTRIBUTING.md](CONTRIBUTING.md)
-3. Escolhe uma [issue](https://github.com/rasgadocarlos2-jpg/morada-ao/issues)
-4. Faz a tua primeira contribuição!
-
----
-
-## 💬 Precisa de Ajuda?
-
-Não hesites em:
-- Abrir uma [issue](https://github.com/rasgadocarlos2-jpg/morada-ao/issues)
-- Enviar email: carlos@rasgadolabs.com
-- DM no Instagram: [@rasgadolabs](https://instagram.com/rasgadolabs)
-
-Todos começámos algures! 🚀
+Ver [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ---
 
