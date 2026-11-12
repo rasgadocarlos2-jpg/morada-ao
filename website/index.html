@@ -425,6 +425,18 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
 }
 
+.registo { max-width: 480px; }
+.registo-label { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 10px; }
+.registo-linha { display: flex; gap: 8px; }
+.registo input[type="email"] { flex: 1; min-width: 0; padding: 14px 16px; font: inherit; font-size: 15px; color: #FFF; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.22); border-radius: 0; }
+.registo input[type="email"]::placeholder { color: rgba(255,255,255,0.4); }
+.registo input[type="email"]:focus { outline: none; border-color: var(--orange); }
+.registo button { padding: 14px 20px; font: inherit; font-size: 15px; font-weight: 600; color: #FFF; background: var(--orange); border: 0; cursor: pointer; white-space: nowrap; }
+.registo button:disabled { opacity: 0.6; cursor: default; }
+.registo-isco { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.registo-estado { margin: 10px 0 0; font-size: 13px; color: rgba(255,255,255,0.6); min-height: 1.4em; }
+@media (max-width: 420px) { .registo-linha { flex-direction: column; } }
+
 ::selection { background: var(--orange); color: #FFF; }
 *:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
 </style>
@@ -479,9 +491,15 @@ a { color: inherit; text-decoration: none; }
             </span>
           </a>
         </div>
-        <div class="hero-notify">
-          Em breve · <a href="#">Regista-te para ser notificado</a>
-        </div>
+        <form class="registo" id="registo" novalidate>
+          <label class="registo-label" for="email-hero">Avisa-me no lançamento</label>
+          <div class="registo-linha">
+            <input id="email-hero" type="email" name="email" placeholder="o-teu@email.com" autocomplete="email" required>
+            <input type="text" name="empresa" class="registo-isco" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <button type="submit">Avisar-me</button>
+          </div>
+          <p class="registo-estado" role="status">Só usamos o email para te avisar do lançamento.</p>
+        </form>
       </div>
 
       <div class="hero-specbar">
@@ -590,9 +608,15 @@ a { color: inherit; text-decoration: none; }
           </span>
         </a>
       </div>
-      <div class="hero-notify" style="margin-top:24px;">
-        Em breve · <a href="#">Regista-te para ser notificado</a>
-      </div>
+      <form class="registo" novalidate style="margin-top:28px;">
+        <label class="registo-label" for="email-cta">Avisa-me no lançamento</label>
+        <div class="registo-linha">
+          <input id="email-cta" type="email" name="email" placeholder="o-teu@email.com" autocomplete="email" required>
+          <input type="text" name="empresa" class="registo-isco" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button type="submit">Avisar-me</button>
+        </div>
+        <p class="registo-estado" role="status">Só usamos o email para te avisar do lançamento.</p>
+      </form>
     </div>
   </section>
 
@@ -625,6 +649,30 @@ a { color: inherit; text-decoration: none; }
     </div>
   </div>
 </footer>
+
+<script>
+document.querySelectorAll('.registo').forEach(function (form) {
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var estado = form.querySelector('.registo-estado');
+    var botao = form.querySelector('button');
+    var email = form.email.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { estado.textContent = 'Escreve um email válido.'; return; }
+    botao.disabled = true;
+    estado.textContent = 'A registar…';
+    try {
+      var r = await fetch('/api/registo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, empresa: form.empresa.value }) });
+      if (!r.ok) throw new Error();
+      form.reset();
+      estado.textContent = 'Feito. Avisamos-te quando a app estiver disponível.';
+    } catch (err) {
+      estado.textContent = 'Não foi possível registar. Tenta outra vez daqui a pouco.';
+    } finally {
+      botao.disabled = false;
+    }
+  });
+});
+</script>
 
 </body>
 </html>
