@@ -1,0 +1,19 @@
+# Morada AO
+
+> Morada AO é uma app angolana que dá a qualquer lugar de Angola um código de morada digital único, calculado a partir das coordenadas GPS com a norma aberta Plus Codes (Open Location Code). Serve para partilhar uma localização exata onde não há nome de rua nem número de porta.
+
+## Factos
+
+- Site: https://moradaao.com
+- Para quem: cidadãos, empresas de entregas e logística, serviços públicos e de saúde em Angola.
+- Como funciona: a app usa o GPS do telemóvel e calcula um Plus Code de 11 caracteres, que identifica uma área de cerca de 3 × 3 metros.
+- Exemplo de código: 6F3M576Q+2Q3 (um ponto no Cazenga, Luanda). Forma curta mostrada na app: +2Q3 Cazenga.
+- A forma curta repete-se a cada poucas centenas de metros dentro do mesmo município; para partilhar deve usar-se o código completo.
+- O código completo pode ser colado diretamente na pesquisa do Google Maps.
+- O cálculo do código é feito no telemóvel e não precisa de internet; o nome do bairro ou município precisa de rede.
+- Preço: gratuita para quem a usa.
+- Estado: em breve na App Store e no Google Play. É possível registar o email em moradaao.com para ser avisado do lançamento.
+
+## Páginas
+
+- [Página principal](https://moradaao.com/): o problema, como funciona, para quem é e perguntas frequentes.

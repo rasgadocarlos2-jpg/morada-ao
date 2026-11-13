@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-AO">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Morada AO — Endereçamento digital para Angola</title>
-<meta name="description" content="Em Angola, milhões vivem em sítios sem rua ou número de porta. O Morada AO atribui a cada lugar um código único, universal e preciso ao metro — para sempre.">
+<title>Morada AO — Morada digital e código de localização em Angola</title>
+<meta name="description" content="Cada lugar em Angola recebe um código de morada único (Plus Code) a partir do GPS, com precisão de cerca de 3 metros, mesmo sem nome de rua. Partilha a tua morada por WhatsApp ou SMS.">
+<link rel="canonical" href="https://moradaao.com/">
 <meta name="theme-color" content="#0D1A2A">
 
 <meta property="og:title" content="Morada AO — Endereçamento digital para Angola">
@@ -433,6 +434,16 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
 }
 
+#perguntas { border-top: 1px solid var(--rule); }
+#perguntas .container { padding-block: clamp(80px, 10vw, 128px); }
+.faq-titulo { font-weight: 700; font-size: clamp(30px, 3.6vw, 44px); line-height: 1.1; letter-spacing: -0.02em; margin: -32px 0 48px; color: var(--ink); max-width: 20ch; }
+.faq { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 clamp(32px, 5vw, 72px); }
+@media (max-width: 760px) { .faq { grid-template-columns: 1fr; } }
+.faq-item { padding: 28px 0; border-top: 1px solid var(--rule); }
+.faq-item h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; margin: 0 0 10px; color: var(--ink); }
+.faq-item p { font-size: 15px; line-height: 1.65; color: var(--ink-2); margin: 0; }
+.faq-item code { font-family: var(--mono); font-size: 13px; background: var(--paper-2); border: 1px solid var(--rule); padding: 1px 6px; }
+
 .registo { max-width: 480px; }
 .registo-label { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 10px; }
 .registo-linha { display: flex; gap: 8px; }
@@ -458,6 +469,7 @@ a { color: inherit; text-decoration: none; }
       <a href="#sobre">Sobre</a>
       <a href="#funciona">Como funciona</a>
       <a href="#quem">Para quem é</a>
+      <a href="#perguntas">Perguntas</a>
       <a href="#descarregar">Descarregar</a>
     </div>
   </div>
@@ -545,7 +557,7 @@ a { color: inherit; text-decoration: none; }
         <article class="step">
           <div class="step-num">01</div>
           <h3 class="step-title">Abres a aplicação no lugar.</h3>
-          <p class="step-body">O GPS identifica a tua posição com precisão ao metro. Processo local, sem envio de dados.</p>
+          <p class="step-body">O GPS do telemóvel encontra a tua posição e o código é calculado no próprio telemóvel.</p>
         </article>
         <article class="step">
           <div class="step-num">02</div>
@@ -555,7 +567,7 @@ a { color: inherit; text-decoration: none; }
         <article class="step">
           <div class="step-num">03</div>
           <h3 class="step-title">Partilhas por qualquer canal.</h3>
-          <p class="step-body">WhatsApp, SMS, chamada. Quem recebe cola em Google Maps ou Waze e chega ao sítio.</p>
+          <p class="step-body">WhatsApp, SMS, chamada. Quem recebe cola o código no Google Maps e chega ao sítio.</p>
         </article>
       </div>
     </div>
@@ -595,6 +607,58 @@ a { color: inherit; text-decoration: none; }
       </div>
     </div>
   </section>
+
+  <section id="perguntas">
+    <div class="container">
+      <div class="sec-title">Perguntas frequentes</div>
+      <h2 class="faq-titulo">Morada digital em Angola, explicada</h2>
+      <div class="faq">
+        <div class="faq-item">
+          <h3>O que é a Morada AO?</h3>
+          <p>A Morada AO é uma app que dá a qualquer lugar de Angola um código de morada único, calculado a partir das coordenadas GPS. Funciona mesmo onde não há nome de rua nem número de porta. Exemplo: <code>6F3M576Q+2Q3</code>, um ponto no Cazenga, em Luanda.</p>
+        </div>
+        <div class="faq-item">
+          <h3>O que é um Plus Code?</h3>
+          <p>Um Plus Code é um código de localização da norma aberta Open Location Code, publicada pela Google. Com 11 caracteres identifica uma área de cerca de 3 por 3 metros, em qualquer parte do mundo. A Morada AO usa esta norma, por isso os códigos não dependem da app.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Como dar a minha morada em Angola se a minha rua não tem nome?</h3>
+          <p>Abres a Morada AO no sítio onde estás e recebes o teu código. Depois partilhas esse código por WhatsApp, SMS ou chamada. Quem recebe cola-o no Google Maps e chega ao local, sem precisar de referências como "depois da escola".</p>
+        </div>
+        <div class="faq-item">
+          <h3>O código funciona no Google Maps?</h3>
+          <p>Sim. O Google Maps aceita Plus Codes na pesquisa: basta colar o código completo, por exemplo <code>6F3M576Q+2Q3</code>, para ver o lugar exato no mapa.</p>
+        </div>
+        <div class="faq-item">
+          <h3>O que é o código curto, como "+2Q3 Cazenga"?</h3>
+          <p>É uma forma mais fácil de ler e dizer em voz alta, que junta o fim do código ao nome do município. Como o mesmo final se repete a cada poucas centenas de metros, para partilhar deve-se usar sempre o código completo, que a app mostra por baixo.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Funciona sem internet?</h3>
+          <p>Sim, o código é calculado no próprio telemóvel a partir do GPS, sem precisar de rede. Só o nome do bairro ou município, mostrado ao lado do código, precisa de ligação à internet.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Quanto custa?</h3>
+          <p>A app Morada AO é gratuita para quem a usa.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Quando posso descarregar a app?</h3>
+          <p>A app chega em breve à App Store e ao Google Play. Podes deixar o teu email nesta página para seres avisado no dia do lançamento.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+    {"@type":"Question","name":"O que é a Morada AO?","acceptedAnswer":{"@type":"Answer","text":"A Morada AO é uma app que dá a qualquer lugar de Angola um código de morada único, calculado a partir das coordenadas GPS. Funciona mesmo onde não há nome de rua nem número de porta. Exemplo: 6F3M576Q+2Q3, um ponto no Cazenga, em Luanda."}},
+    {"@type":"Question","name":"O que é um Plus Code?","acceptedAnswer":{"@type":"Answer","text":"Um Plus Code é um código de localização da norma aberta Open Location Code, publicada pela Google. Com 11 caracteres identifica uma área de cerca de 3 por 3 metros, em qualquer parte do mundo. A Morada AO usa esta norma, por isso os códigos não dependem da app."}},
+    {"@type":"Question","name":"Como dar a minha morada em Angola se a minha rua não tem nome?","acceptedAnswer":{"@type":"Answer","text":"Abres a Morada AO no sítio onde estás e recebes o teu código. Depois partilhas esse código por WhatsApp, SMS ou chamada. Quem recebe cola-o no Google Maps e chega ao local."}},
+    {"@type":"Question","name":"O código funciona no Google Maps?","acceptedAnswer":{"@type":"Answer","text":"Sim. O Google Maps aceita Plus Codes na pesquisa: basta colar o código completo, por exemplo 6F3M576Q+2Q3, para ver o lugar exato no mapa."}},
+    {"@type":"Question","name":"O que é o código curto, como +2Q3 Cazenga?","acceptedAnswer":{"@type":"Answer","text":"É uma forma mais fácil de ler e dizer em voz alta, que junta o fim do código ao nome do município. Como o mesmo final se repete a cada poucas centenas de metros, para partilhar deve-se usar sempre o código completo."}},
+    {"@type":"Question","name":"Funciona sem internet?","acceptedAnswer":{"@type":"Answer","text":"Sim, o código é calculado no próprio telemóvel a partir do GPS, sem precisar de rede. Só o nome do bairro ou município precisa de ligação à internet."}},
+    {"@type":"Question","name":"Quanto custa?","acceptedAnswer":{"@type":"Answer","text":"A app Morada AO é gratuita para quem a usa."}},
+    {"@type":"Question","name":"Quando posso descarregar a app?","acceptedAnswer":{"@type":"Answer","text":"A app chega em breve à App Store e ao Google Play. É possível deixar o email em moradaao.com para ser avisado no lançamento."}}
+  ]}</script>
 
   <section class="cta-dark" id="descarregar">
     <div class="container">
