@@ -14,7 +14,6 @@ import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
 
 import { ThemedText } from "@/components/ThemedText";
-import { Button } from "@/components/Button";
 import { OnboardingArt } from "@/components/OnboardingArt";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Colors } from "@/constants/theme";
@@ -68,6 +67,7 @@ const SLIDES: Slide[] = [
 ];
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const NAVY = "#0D1A2A";
 
 export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const insets = useSafeAreaInsets();
@@ -109,13 +109,16 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
+    <View style={[styles.container, { backgroundColor: NAVY }]}>
+      <ThemedText style={[styles.wordmark, { top: insets.top + Spacing.lg + 8 }]}>
+        MORADA<ThemedText style={[styles.wordmarkText, { color: Colors.light.primary }]}>·</ThemedText>AO
+      </ThemedText>
       <Pressable
         style={[styles.skipButton, { top: insets.top + Spacing.lg }]}
         onPress={handleSkip}
         hitSlop={20}
       >
-        <ThemedText style={{ color: theme.textSecondary, fontWeight: "500" }}>
+        <ThemedText style={{ color: "rgba(255,255,255,0.7)", fontWeight: "600" }}>
           Saltar
         </ThemedText>
       </Pressable>
@@ -151,7 +154,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               style={[
                 styles.dot,
                 {
-                  backgroundColor: i === index ? theme.primary : theme.border,
+                  backgroundColor: i === index ? Colors.light.primary : "rgba(255,255,255,0.25)",
                   width: i === index ? 24 : 8,
                 },
               ]}
@@ -159,13 +162,16 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
           ))}
         </View>
 
-        <Button
+        <Pressable
           onPress={handleNext}
-          style={[styles.button, { backgroundColor: theme.primary }]}
+          style={({ pressed }) => [styles.button, pressed && { opacity: 0.9 }]}
         >
-          {isLast ? "Mostrar a minha morada" : "Continuar"}
-        </Button>
-        <ThemedText style={[styles.privacy, { color: theme.textMuted, opacity: isLast ? 1 : 0 }]}>
+          {isLast ? <Feather name="crosshair" size={19} color="#FFFFFF" /> : null}
+          <ThemedText style={styles.buttonText}>
+            {isLast ? "Mostrar a minha morada" : "Continuar"}
+          </ThemedText>
+        </Pressable>
+        <ThemedText style={[styles.privacy, { opacity: isLast ? 1 : 0 }]}>
           Pedimos a localização só para calcular o teu código.
         </ThemedText>
       </View>
@@ -196,19 +202,19 @@ function SlideView({
       </View>
 
       <View style={styles.textContent}>
-        <ThemedText type="h1" style={styles.headline}>
+        <ThemedText style={styles.headline}>
           {slide.title}
         </ThemedText>
 
-        <ThemedText style={[styles.description, { color: theme.textSecondary }]}>
+        <ThemedText style={styles.description}>
           {slide.description}
         </ThemedText>
 
         <View style={styles.features}>
           {slide.features.map((f, i) => (
-            <View key={i} style={[styles.featureItem, { backgroundColor: theme.backgroundSecondary }]}>
-              <Feather name={f.icon} size={14} color={theme.primary} />
-              <ThemedText style={[styles.featureText, { color: theme.text }]}>
+            <View key={i} style={styles.featureItem}>
+              <Feather name={f.icon} size={14} color="#FF7A3C" />
+              <ThemedText style={styles.featureText}>
                 {f.text}
               </ThemedText>
             </View>
@@ -241,12 +247,18 @@ const styles = StyleSheet.create({
   headline: {
     textAlign: "center",
     marginBottom: Spacing.md,
+    fontSize: 30,
+    lineHeight: 34,
+    fontWeight: "800",
+    letterSpacing: -0.6,
+    color: "#FFFFFF",
   },
   description: {
     textAlign: "center",
     marginBottom: Spacing.xl,
     fontSize: 16,
     lineHeight: 24,
+    color: "rgba(255,255,255,0.75)",
   },
   features: {
     flexDirection: "row",
@@ -261,16 +273,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: BorderRadius.full,
+    backgroundColor: "#15283C",
   },
   featureText: {
     fontSize: 13,
     fontWeight: "600",
+    color: "#FFFFFF",
   },
   privacy: {
     fontSize: 12,
     textAlign: "center",
     marginTop: -Spacing.md,
+    color: "rgba(255,255,255,0.6)",
   },
+  wordmark: {
+    position: "absolute",
+    left: Spacing.xl,
+    zIndex: 10,
+    fontWeight: "700",
+    fontSize: 13,
+    letterSpacing: 1.8,
+    color: "#FFFFFF",
+  },
+  wordmarkText: { fontWeight: "700", fontSize: 13, letterSpacing: 1.8 },
   footer: {
     paddingHorizontal: Spacing.xl,
     paddingTop: Spacing.lg,
@@ -287,6 +312,13 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   button: {
-    borderRadius: BorderRadius.full,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: Colors.light.primary,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
   },
+  buttonText: { color: "#FFFFFF", fontSize: 17, fontWeight: "700" },
 });

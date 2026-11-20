@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
   TextInput,
   Pressable,
   ScrollView,
-  Platform,
   Linking,
+  Share,
+  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -16,15 +17,19 @@ import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 
 import { ThemedText } from "@/components/ThemedText";
-import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, Colors, Fonts } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 import {
   extractPlusCode,
   isValidPlusCode,
   isFullCode,
   decodePlusCode,
+  generateMorada,
+  generateShareMessage,
+  MoradaResult,
 } from "@/lib/plusCodes";
+import { reverseGeocode, GeocodingResult } from "@/lib/geocoding";
+import { addRecent } from "@/lib/storage";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { track } from "@/lib/analytics";
 
@@ -32,42 +37,80 @@ interface Props {
   navigation: NativeStackNavigationProp<RootStackParamList, "Search">;
 }
 
+const NAVY = "#0D1A2A";
+const NAVY_2 = "#15283C";
+const ORANGE = "#EA5D1E";
+const ORANGE_LIGHT = "#FF7A3C";
+const MONO = (Fonts as any)?.mono || "monospace";
+
 export default function SearchScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme, isDark } = useTheme();
   const [input, setInput] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [geo, setGeo] = useState<GeocodingResult | null>(null);
+  const [loadingGeo, setLoadingGeo] = useState(false);
 
   const code = extractPlusCode(input) ?? input.trim().toUpperCase();
   const valid = isValidPlusCode(code);
   const full = valid && isFullCode(code);
   const decoded = full ? decodePlusCode(code) : null;
+  const typed = input.trim().length >= 4;
 
-  const inputBg = isDark ? theme.backgroundSecondary : theme.backgroundDefault;
-  const monoFont = (Fonts as any)?.mono || "monospace";
+  // Com o código válido, vai buscar o bairro para mostrar a morada por extenso.
+  useEffect(() => {
+    if (!decoded) {
+      setGeo(null);
+      return;
+    }
+    let alive = true;
+    setLoadingGeo(true);
+    reverseGeocode(decoded.latitudeCenter, decoded.longitudeCenter)
+      .then((g) => alive && setGeo(g))
+      .finally(() => alive && setLoadingGeo(false));
+    track("search_code_valid");
+    return () => {
+      alive = false;
+    };
+  }, [decoded?.latitudeCenter, decoded?.longitudeCenter]);
+
+  const morada: MoradaResult | null = decoded
+    ? generateMorada(
+        decoded.latitudeCenter,
+        decoded.longitudeCenter,
+        geo?.municipio ?? null,
+        geo?.cidade || geo?.bairro || null
+      )
+    : null;
+
+  const words = [geo?.bairro, geo?.municipio, geo?.provincia]
+    .filter((v, i, a): v is string => !!v && a.indexOf(v) === i)
+    .join(" · ");
+
+  const remember = () => {
+    if (!morada) return;
+    addRecent({
+      fullCode: morada.fullCode,
+      shortCode: morada.shortCode,
+      reference: morada.reference,
+      bairro: geo?.bairro ?? null,
+      kind: "procurado",
+      latitude: morada.latitude,
+      longitude: morada.longitude,
+    });
+  };
 
   const handlePaste = async () => {
     Haptics.selectionAsync();
     const clip = await Clipboard.getStringAsync();
-    if (clip) {
-      setInput(clip);
-      setError(null);
-    }
+    if (clip) setInput(clip);
   };
 
-  const handleOpen = () => {
-    if (!decoded) {
-      setError(
-        !valid
-          ? "Esse código não parece ser um Plus Code válido."
-          : "Precisas do código completo (ex: 6F3M576Q+2Q3)."
-      );
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      return;
-    }
+  const handleSeeOnMap = () => {
+    if (!decoded) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     track("search_opened_code", { via: "manual" });
+    remember();
     navigation.navigate("Map", {
       focus: {
         latitude: decoded.latitudeCenter,
@@ -77,226 +120,217 @@ export default function SearchScreen({ navigation }: Props) {
     });
   };
 
-  const openInGoogleMaps = async () => {
-    const url = `https://www.google.com/maps/place/${encodeURIComponent(code)}`;
+  const handleGo = async () => {
+    if (!decoded) return;
     track("search_opened_external", { app: "google" });
-    await Linking.openURL(url);
+    remember();
+    await Linking.openURL(
+      `https://www.google.com/maps/dir/?api=1&destination=${decoded.latitudeCenter},${decoded.longitudeCenter}`
+    );
   };
 
-  const openInWaze = async () => {
-    if (!decoded) return;
-    const url = `https://waze.com/ul?ll=${decoded.latitudeCenter},${decoded.longitudeCenter}&navigate=yes`;
-    track("search_opened_external", { app: "waze" });
-    await Linking.openURL(url);
+  const handleShare = async () => {
+    if (!morada) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    try {
+      await Share.share({ message: generateShareMessage(morada) });
+      track("search_shared");
+      remember();
+    } catch {}
   };
+
+  const fieldBg = isDark ? theme.backgroundSecondary : "#FFFFFF";
+  const errorMsg =
+    typed && !decoded
+      ? !valid
+        ? "Esse código não parece válido. Confirma as letras e o +."
+        : "Falta a parte da frente. Pede o código completo (ex.: 6F3M576Q+2Q3)."
+      : null;
 
   return (
     <ScrollView
       style={{ backgroundColor: theme.backgroundRoot }}
       contentContainerStyle={{
-        paddingTop: headerHeight + Spacing.xl,
-        paddingBottom: insets.bottom + Spacing["2xl"],
-        paddingHorizontal: Spacing.lg,
+        paddingTop: headerHeight + 12,
+        paddingBottom: insets.bottom + 24,
+        paddingHorizontal: 16,
+        gap: 14,
+        flexGrow: 1,
       }}
       keyboardShouldPersistTaps="handled"
     >
-      <ThemedText type="h2" style={styles.title}>
-        Procurar morada
-      </ThemedText>
-      <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
-        Cola um Plus Code recebido por WhatsApp, SMS ou qualquer app.
-      </ThemedText>
-
-      <View style={styles.inputWrap}>
-        <TextInput
-          value={input}
-          onChangeText={(t) => {
-            setInput(t);
-            setError(null);
-          }}
-          placeholder="6F3M576Q+2Q3"
-          placeholderTextColor={theme.textMuted}
-          autoCapitalize="characters"
-          autoCorrect={false}
-          returnKeyType="go"
-          onSubmitEditing={handleOpen}
-          style={[
-            styles.input,
-            {
-              backgroundColor: inputBg,
-              color: theme.text,
-              borderColor: error ? Colors.light.error : theme.border,
-              fontFamily: monoFont,
-            },
-          ]}
-        />
-        <Pressable
-          onPress={handlePaste}
-          style={[styles.pasteBtn, { backgroundColor: theme.primary }]}
-          hitSlop={8}
-        >
-          <Feather name="clipboard" size={16} color="#FFFFFF" />
+      <View
+        style={[
+          styles.field,
+          { backgroundColor: fieldBg, borderColor: errorMsg ? Colors.light.error : theme.border },
+        ]}
+      >
+        <View style={{ flex: 1 }}>
+          <ThemedText style={[styles.eyebrow, { color: theme.textSecondary }]}>
+            CÓDIGO QUE RECEBESTE
+          </ThemedText>
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            placeholder="6F3M576Q+2Q3"
+            placeholderTextColor={theme.textMuted}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            returnKeyType="go"
+            onSubmitEditing={handleSeeOnMap}
+            style={[styles.input, { color: theme.text }]}
+          />
+        </View>
+        {input ? (
+          <Pressable onPress={() => setInput("")} hitSlop={8} accessibilityLabel="Limpar">
+            <Feather name="x" size={18} color={theme.textSecondary} />
+          </Pressable>
+        ) : null}
+        <Pressable onPress={handlePaste} style={styles.pasteBtn} hitSlop={6}>
+          <Feather name="clipboard" size={15} color="#FFFFFF" />
           <ThemedText style={styles.pasteText}>Colar</ThemedText>
         </Pressable>
       </View>
 
-      {error ? (
+      {errorMsg ? (
         <View style={styles.errorRow}>
           <Feather name="alert-circle" size={14} color={Colors.light.error} />
-          <ThemedText style={[styles.errorText, { color: Colors.light.error }]}>
-            {error}
-          </ThemedText>
+          <ThemedText style={[styles.errorText, { color: Colors.light.error }]}>{errorMsg}</ThemedText>
         </View>
       ) : null}
 
-      {decoded ? (
-        <View style={[styles.preview, { backgroundColor: inputBg }]}>
-          <View style={styles.previewHeader}>
-            <View style={[styles.previewIcon, { backgroundColor: theme.primary }]}>
-              <Feather name="check" size={16} color="#FFFFFF" />
-            </View>
-            <ThemedText style={styles.previewTitle}>Código válido</ThemedText>
+      {decoded && morada ? (
+        <View style={styles.card}>
+          <View style={styles.validChip}>
+            <Feather name="check" size={13} color="#7BD3A8" />
+            <ThemedText style={styles.validText}>Código válido</ThemedText>
           </View>
-          <ThemedText style={[styles.previewCode, { fontFamily: monoFont }]}>
-            {code}
-          </ThemedText>
-          <ThemedText style={[styles.previewCoords, { color: theme.textSecondary }]}>
-            {decoded.latitudeCenter.toFixed(6)}, {decoded.longitudeCenter.toFixed(6)}
-          </ThemedText>
 
-          <View style={{ height: Spacing.lg }} />
+          {loadingGeo && !geo ? (
+            <ActivityIndicator color={ORANGE_LIGHT} style={{ alignSelf: "flex-start", marginTop: 14 }} />
+          ) : (
+            <>
+              <ThemedText style={styles.bigCode} numberOfLines={1} adjustsFontSizeToFit>
+                {morada.shortCode && morada.reference ? (
+                  <>
+                    <ThemedText style={[styles.bigCode, { color: ORANGE_LIGHT }]}>+</ThemedText>
+                    {morada.shortCode.replace(/^\+/, "")} {morada.reference}
+                  </>
+                ) : (
+                  morada.fullCode
+                )}
+              </ThemedText>
+              {words ? <ThemedText style={styles.words}>{words}</ThemedText> : null}
+              <ThemedText style={styles.full}>{morada.fullCode}</ThemedText>
+            </>
+          )}
 
-          <Button
-            onPress={handleOpen}
-            style={{ backgroundColor: theme.primary, marginBottom: Spacing.sm }}
+          <Pressable
+            onPress={handleGo}
+            style={({ pressed }) => [styles.goBtn, pressed && { opacity: 0.9 }]}
           >
-            Ver no mapa
-          </Button>
+            <Feather name="navigation" size={18} color="#FFFFFF" />
+            <ThemedText style={styles.goText}>Ir até lá no Google Maps</ThemedText>
+          </Pressable>
+          <View style={styles.tiles}>
+            <Pressable style={styles.tile} onPress={handleSeeOnMap}>
+              <Feather name="map-pin" size={17} color="#FFFFFF" />
+              <ThemedText style={styles.tileText}>Ver no mapa</ThemedText>
+            </Pressable>
+            <Pressable style={styles.tile} onPress={handleShare}>
+              <Feather name="share-2" size={17} color="#FFFFFF" />
+              <ThemedText style={styles.tileText}>Partilhar</ThemedText>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
 
-          {Platform.OS !== "web" ? (
-            <View style={styles.externalRow}>
-              <Pressable
-                onPress={openInGoogleMaps}
-                style={[styles.externalBtn, { borderColor: theme.border }]}
-              >
-                <Feather name="map" size={16} color={theme.text} />
-                <ThemedText style={styles.externalText}>Google Maps</ThemedText>
-              </Pressable>
-              <Pressable
-                onPress={openInWaze}
-                style={[styles.externalBtn, { borderColor: theme.border }]}
-              >
-                <Feather name="navigation" size={16} color={theme.text} />
-                <ThemedText style={styles.externalText}>Waze</ThemedText>
-              </Pressable>
-            </View>
-          ) : null}
-        </View>
-      ) : (
-        <View style={[styles.hint, { backgroundColor: inputBg }]}>
-          <ThemedText style={[styles.hintTitle, { color: theme.textSecondary }]}>
-            O que é um Plus Code?
-          </ThemedText>
-          <ThemedText style={[styles.hintBody, { color: theme.textSecondary }]}>
-            É um código tipo <ThemedText style={{ fontFamily: monoFont }}>6F3M576Q+2Q3</ThemedText> que
-            representa um lugar com precisão de alguns metros. Funciona em qualquer parte do mundo.
-          </ThemedText>
-        </View>
-      )}
+      <View style={{ flex: 1 }} />
+      <ThemedText style={[styles.tip, { color: theme.textSecondary }]}>
+        Recebeste um código pelo WhatsApp? Toca nele, copia e carrega em{" "}
+        <ThemedText style={[styles.tip, { color: theme.text, fontWeight: "700" }]}>Colar</ThemedText>.
+      </ThemedText>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { marginBottom: 4 },
-  subtitle: { marginBottom: Spacing.xl, fontSize: 15 },
-  inputWrap: {
+  field: {
     flexDirection: "row",
-    gap: Spacing.sm,
     alignItems: "center",
-  },
-  input: {
-    flex: 1,
-    height: 56,
-    borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.lg,
-    fontSize: 18,
-    fontWeight: "600",
-    letterSpacing: 1,
+    gap: 12,
     borderWidth: 1,
+    borderRadius: 18,
+    paddingLeft: 16,
+    paddingRight: 10,
+    paddingVertical: 10,
+  },
+  eyebrow: { fontFamily: MONO, fontSize: 10, letterSpacing: 1.6 },
+  input: {
+    fontFamily: MONO,
+    fontSize: 20,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+    paddingVertical: 4,
+    marginTop: 2,
   },
   pasteBtn: {
     flexDirection: "row",
-    gap: 6,
     alignItems: "center",
-    paddingHorizontal: Spacing.md,
-    height: 56,
-    borderRadius: BorderRadius.md,
-  },
-  pasteText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-    fontSize: 14,
-  },
-  errorRow: {
-    flexDirection: "row",
     gap: 6,
-    alignItems: "center",
-    marginTop: Spacing.sm,
+    height: 44,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: NAVY,
   },
+  pasteText: { color: "#FFFFFF", fontWeight: "700", fontSize: 14 },
+  errorRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: -4 },
   errorText: { fontSize: 13, flex: 1 },
-  preview: {
-    marginTop: Spacing.xl,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
-  },
-  previewHeader: {
+
+  card: { backgroundColor: NAVY, borderRadius: 22, padding: 18 },
+  validChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-  previewIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  previewTitle: { fontWeight: "600", fontSize: 15 },
-  previewCode: {
-    fontSize: 24,
-    fontWeight: "700",
-    letterSpacing: 1.5,
-    marginBottom: 4,
-  },
-  previewCoords: { fontSize: 12 },
-  externalRow: {
-    flexDirection: "row",
-    gap: Spacing.sm,
-  },
-  externalBtn: {
-    flex: 1,
-    flexDirection: "row",
     gap: 6,
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(123,211,168,0.12)",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    height: 26,
+  },
+  validText: { color: "#7BD3A8", fontSize: 12, fontWeight: "700" },
+  bigCode: {
+    fontFamily: MONO,
+    fontWeight: "700",
+    fontSize: 30,
+    lineHeight: 38,
+    color: "#FFFFFF",
+    marginTop: 12,
+  },
+  words: { fontSize: 15, color: "rgba(255,255,255,0.75)", marginTop: 4 },
+  full: { fontFamily: MONO, fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 6 },
+  goBtn: {
+    height: 54,
+    borderRadius: 14,
+    backgroundColor: ORANGE,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
+    gap: 10,
+    marginTop: 18,
   },
-  externalText: { fontSize: 14, fontWeight: "500" },
-  hint: {
-    marginTop: Spacing.xl,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
+  goText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
+  tiles: { flexDirection: "row", gap: 10, marginTop: 10 },
+  tile: {
+    flex: 1,
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: NAVY_2,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
   },
-  hintTitle: {
-    fontSize: 12,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: Spacing.sm,
-    fontWeight: "700",
-  },
-  hintBody: { fontSize: 14, lineHeight: 22 },
+  tileText: { color: "#FFFFFF", fontSize: 14, fontWeight: "600" },
+  tip: { fontSize: 14, lineHeight: 21, textAlign: "center" },
 });

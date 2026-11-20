@@ -1,23 +1,24 @@
 import React from "react";
-import { View, StyleSheet, Platform, Linking, Alert } from "react-native";
+import { View, StyleSheet, Platform, Linking, Alert, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import { Feather } from "@expo/vector-icons";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
-import { Button } from "@/components/Button";
-import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, Colors } from "@/constants/theme";
 import { track } from "@/lib/analytics";
 
 interface PermissionScreenProps {
   onPermissionGranted: () => void;
 }
 
+const NAVY = "#0D1A2A";
+const NAVY_2 = "#15283C";
+const ORANGE = "#EA5D1E";
+const ORANGE_LIGHT = "#FF7A3C";
+
 export default function PermissionScreen({ onPermissionGranted }: PermissionScreenProps) {
   const insets = useSafeAreaInsets();
-  const { theme } = useTheme();
   const [permission, requestPermission] = Location.useForegroundPermissions();
 
   const handleRequestPermission = async () => {
@@ -26,196 +27,166 @@ export default function PermissionScreen({ onPermissionGranted }: PermissionScre
       granted: result.granted,
       can_ask_again: result.canAskAgain,
     });
-    if (result.granted) {
-      onPermissionGranted();
-    }
+    if (result.granted) onPermissionGranted();
   };
 
   const handleOpenSettings = async () => {
-    if (Platform.OS !== "web") {
-      try {
-        await Linking.openSettings();
-      } catch {
-        Alert.alert(
-          "Não foi possível abrir as definições",
-          "Por favor, abre manualmente as definições do dispositivo."
-        );
-      }
+    try {
+      await Linking.openSettings();
+    } catch {
+      Alert.alert(
+        "Não foi possível abrir as definições",
+        "Abre as definições do telemóvel e ativa a localização para a Morada AO."
+      );
     }
   };
 
   const isDeniedPermanently = permission?.status === "denied" && !permission?.canAskAgain;
+  const showSettings = isDeniedPermanently && Platform.OS !== "web";
 
   return (
     <View
       style={[
         styles.container,
-        {
-          backgroundColor: theme.backgroundRoot,
-          paddingTop: insets.top + Spacing["4xl"],
-          paddingBottom: insets.bottom + Spacing.xl,
-        },
+        { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 24 },
       ]}
     >
-      <View style={styles.content}>
-        <Animated.View
-          entering={FadeInUp.delay(200).duration(600)}
-          style={styles.iconContainer}
-        >
-          <View style={[styles.iconCircle, { backgroundColor: Colors.light.primary + "15" }]}>
-            <Feather name="map-pin" size={48} color={Colors.light.primary} />
-          </View>
-        </Animated.View>
+      <ThemedText style={styles.wordmark}>
+        MORADA<ThemedText style={[styles.wordmark, { color: ORANGE }]}>·</ThemedText>AO
+      </ThemedText>
 
-        <Animated.View entering={FadeInUp.delay(400).duration(600)}>
-          <ThemedText type="h1" style={styles.headline}>
-            Precisamos da tua localização
-          </ThemedText>
+      <Animated.View entering={FadeInUp.delay(150).duration(500)} style={styles.art}>
+        <View style={styles.ring3} />
+        <View style={styles.ring2} />
+        <View style={styles.pinCircle}>
+          <Feather name="crosshair" size={40} color="#FFFFFF" />
+        </View>
+      </Animated.View>
 
-          <ThemedText style={[styles.description, { color: theme.textSecondary }]}>
-            Para gerar o código da tua morada digital.
-          </ThemedText>
+      <Animated.View entering={FadeInUp.delay(300).duration(500)}>
+        <ThemedText style={styles.title}>
+          Falta a tua <ThemedText style={[styles.title, { color: ORANGE_LIGHT }]}>localização</ThemedText>
+        </ThemedText>
+        <ThemedText style={styles.desc}>
+          Sem ela não conseguimos calcular o código do sítio onde estás.
+        </ThemedText>
 
-          <View style={styles.bullets}>
-            <Bullet
-              icon="check-circle"
-              text="Processada apenas no telemóvel"
-              theme={theme}
-            />
-            <Bullet
-              icon="check-circle"
-              text="Nunca enviada para servidores"
-              theme={theme}
-            />
-            <Bullet
-              icon="check-circle"
-              text="Podes revogar a qualquer momento"
-              theme={theme}
-            />
-          </View>
-        </Animated.View>
+        <View style={styles.list}>
+          <Item text="O código é calculado no teu telemóvel." />
+          <Item text="Só o nome do bairro é pedido pela internet." />
+          <Item text="Podes desligar a qualquer momento nas definições." />
+        </View>
 
         {isDeniedPermanently ? (
-          <Animated.View
-            entering={FadeInUp.delay(600).duration(600)}
-            style={styles.deniedContainer}
-          >
-            <View style={[styles.warningBox, { backgroundColor: Colors.light.warning + "15" }]}>
-              <Feather name="alert-circle" size={20} color={Colors.light.warning} />
-              <ThemedText style={[styles.warningText, { color: theme.text }]}>
-                A permissão de localização foi negada. Precisas de a activar nas definições do dispositivo.
-              </ThemedText>
-            </View>
-          </Animated.View>
+          <View style={styles.warn}>
+            <Feather name="alert-circle" size={18} color={ORANGE_LIGHT} />
+            <ThemedText style={styles.warnText}>
+              A localização está bloqueada para a Morada AO. Ativa-a nas definições do telemóvel,
+              de preferência como localização exata.
+            </ThemedText>
+          </View>
         ) : null}
-      </View>
-
-      <Animated.View
-        entering={FadeInUp.delay(600).duration(600)}
-        style={styles.footer}
-      >
-        {isDeniedPermanently && Platform.OS !== "web" ? (
-          <Button
-            onPress={handleOpenSettings}
-            style={[styles.button, { backgroundColor: Colors.light.primary }]}
-          >
-            Abrir Definições
-          </Button>
-        ) : (
-          <Button
-            onPress={handleRequestPermission}
-            style={[styles.button, { backgroundColor: Colors.light.primary }]}
-          >
-            Permitir Localização
-          </Button>
-        )}
       </Animated.View>
+
+      <View style={{ flex: 1 }} />
+
+      <Pressable
+        onPress={showSettings ? handleOpenSettings : handleRequestPermission}
+        style={({ pressed }) => [styles.button, pressed && { opacity: 0.9 }]}
+      >
+        <Feather name={showSettings ? "settings" : "crosshair"} size={19} color="#FFFFFF" />
+        <ThemedText style={styles.buttonText}>
+          {showSettings ? "Abrir definições" : "Permitir localização"}
+        </ThemedText>
+      </Pressable>
     </View>
   );
 }
 
-function Bullet({
-  icon,
-  text,
-  theme,
-}: {
-  icon: keyof typeof Feather.glyphMap;
-  text: string;
-  theme: any;
-}) {
+function Item({ text }: { text: string }) {
   return (
-    <View style={styles.bulletRow}>
-      <Feather name={icon} size={16} color={Colors.light.success} />
-      <ThemedText style={[styles.bulletText, { color: theme.text }]}>
-        {text}
-      </ThemedText>
+    <View style={styles.item}>
+      <View style={styles.itemIcon}>
+        <Feather name="check" size={14} color={ORANGE_LIGHT} />
+      </View>
+      <ThemedText style={styles.itemText}>{text}</ThemedText>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: Spacing.xl,
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  iconContainer: {
-    marginBottom: Spacing["3xl"],
-  },
-  iconCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  container: { flex: 1, backgroundColor: NAVY, paddingHorizontal: 24 },
+  wordmark: { fontWeight: "700", fontSize: 13, letterSpacing: 1.8, color: "#FFFFFF" },
+  art: {
+    height: 220,
+    marginTop: 24,
+    borderRadius: 24,
+    backgroundColor: NAVY_2,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
   },
-  headline: {
-    textAlign: "center",
-    marginBottom: Spacing.lg,
+  ring3: {
+    position: "absolute",
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
   },
-  description: {
-    textAlign: "center",
-    paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.xl,
+  ring2: {
+    position: "absolute",
+    width: 136,
+    height: 136,
+    borderRadius: 68,
+    borderWidth: 1,
+    borderColor: "rgba(255,122,60,0.35)",
   },
-  bullets: {
-    alignSelf: "stretch",
-    gap: Spacing.md,
-    marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-  },
-  bulletRow: {
-    flexDirection: "row",
+  pinCircle: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: ORANGE,
     alignItems: "center",
-    gap: Spacing.md,
+    justifyContent: "center",
   },
-  bulletText: {
-    fontSize: 14,
-    flex: 1,
+  title: {
+    fontSize: 32,
+    lineHeight: 36,
+    fontWeight: "800",
+    letterSpacing: -0.6,
+    color: "#FFFFFF",
+    marginTop: 32,
   },
-  deniedContainer: {
-    marginTop: Spacing["2xl"],
-    width: "100%",
+  desc: { fontSize: 16, lineHeight: 24, color: "rgba(255,255,255,0.75)", marginTop: 12 },
+  list: { gap: 12, marginTop: 24 },
+  item: { flexDirection: "row", alignItems: "center", gap: 12 },
+  itemIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: NAVY_2,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  warningBox: {
+  itemText: { flex: 1, fontSize: 15, lineHeight: 21, color: "#FFFFFF" },
+  warn: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    gap: Spacing.md,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    gap: 10,
+    backgroundColor: NAVY_2,
+    borderRadius: 14,
+    padding: 14,
+    marginTop: 20,
   },
-  warningText: {
-    flex: 1,
-    fontSize: 14,
-  },
-  footer: {
-    width: "100%",
-  },
+  warnText: { flex: 1, fontSize: 14, lineHeight: 20, color: "rgba(255,255,255,0.85)" },
   button: {
-    borderRadius: BorderRadius.md,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: ORANGE,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
   },
+  buttonText: { color: "#FFFFFF", fontSize: 17, fontWeight: "700" },
 });

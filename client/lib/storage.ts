@@ -4,6 +4,7 @@ const KEYS = {
   HAS_SEEN_ONBOARDING: "morada_ao_has_seen_onboarding_v2",
   SAVED_ADDRESSES: "morada_ao_saved_addresses",
   LAST_LOCATION: "morada_ao_last_location",
+  RECENTS: "morada_ao_recents",
 };
 
 export type SavedAddressPreset =
@@ -127,5 +128,41 @@ export async function setLastLocation(location: LastLocation): Promise<void> {
     await AsyncStorage.setItem(KEYS.LAST_LOCATION, JSON.stringify(location));
   } catch {
     console.error("Failed to save last location");
+  }
+}
+
+export interface RecentAddress {
+  fullCode: string;
+  shortCode: string;
+  reference: string;
+  bairro: string | null;
+  kind: "partilhado" | "procurado";
+  latitude: number;
+  longitude: number;
+  at: string;
+}
+
+const MAX_RECENTS = 5;
+
+export async function getRecents(): Promise<RecentAddress[]> {
+  try {
+    const value = await AsyncStorage.getItem(KEYS.RECENTS);
+    return value ? JSON.parse(value) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Guarda as últimas moradas partilhadas (sem repetidos). */
+export async function addRecent(item: Omit<RecentAddress, "at">): Promise<void> {
+  try {
+    const all = await getRecents();
+    const next = [
+      { ...item, at: new Date().toISOString() },
+      ...all.filter((r) => r.fullCode !== item.fullCode),
+    ].slice(0, MAX_RECENTS);
+    await AsyncStorage.setItem(KEYS.RECENTS, JSON.stringify(next));
+  } catch {
+    console.error("Failed to save recent");
   }
 }
