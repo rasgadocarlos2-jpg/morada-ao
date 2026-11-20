@@ -1,38 +1,45 @@
-import React from "react";
-import {
-  View,
-  StyleSheet,
-  Pressable,
-  Linking,
-  ScrollView,
-  Alert,
-} from "react-native";
+import React, { useCallback, useState } from "react";
+import { View, StyleSheet, Pressable, Linking, ScrollView, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as Clipboard from "expo-clipboard";
+import * as Location from "expo-location";
 import Constants from "expo-constants";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, Colors } from "@/constants/theme";
+import { Fonts } from "@/constants/theme";
 import { track } from "@/lib/analytics";
-import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
-const PRIVACY_URL = "https://rasgadolabs.com/morada-ao/privacy";
+const SITE = "https://moradaao.com";
 const SUPPORT_EMAIL = "carlos@rasgadolabs.com";
+const NAVY = "#0D1A2A";
+const ORANGE = "#EA5D1E";
+const MONO = (Fonts as any)?.mono || "monospace";
+
+type LocState = "exata" | "aproximada" | "desligada" | null;
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme, isDark } = useTheme();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-
+  const [loc, setLoc] = useState<LocState>(null);
   const appVersion = Constants.expoConfig?.version ?? "1.0.0";
+
+  useFocusEffect(
+    useCallback(() => {
+      Location.getForegroundPermissionsAsync()
+        .then((p: any) => {
+          if (!p.granted) return setLoc("desligada");
+          const coarse = p?.android?.accuracy === "coarse" || p?.ios?.accuracy === "reduced";
+          setLoc(coarse ? "aproximada" : "exata");
+        })
+        .catch(() => setLoc(null));
+    }, [])
+  );
 
   const openUrl = async (url: string, eventName: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -54,318 +61,189 @@ export default function SettingsScreen() {
   const handleContact = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     track("contact_opened");
-    const subject = encodeURIComponent("Feedback Morada AO");
-    const url = `mailto:${SUPPORT_EMAIL}?subject=${subject}`;
+    const subject = encodeURIComponent("Morada AO");
     try {
-      await Linking.openURL(url);
+      await Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=${subject}`);
     } catch {
       handleCopyEmail();
     }
   };
 
-  const handleRate = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    track("rate_app_opened");
-    Alert.alert(
-      "Avaliar na loja",
-      "A app ainda não está publicada. Em breve!"
-    );
-  };
-
-  const cardBg = isDark ? theme.backgroundSecondary : theme.backgroundDefault;
+  const cardBg = isDark ? theme.backgroundSecondary : "#FFFFFF";
+  const locValue =
+    loc === "exata" ? "Exata" : loc === "aproximada" ? "Aproximada" : loc === "desligada" ? "Desligada" : "";
+  const locWarn = loc === "aproximada" || loc === "desligada";
 
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
+      style={{ backgroundColor: theme.backgroundRoot }}
       contentContainerStyle={{
-        paddingTop: headerHeight + Spacing.xl,
-        paddingBottom: insets.bottom + Spacing["2xl"],
-        paddingHorizontal: Spacing.lg,
+        paddingTop: headerHeight + 12,
+        paddingBottom: insets.bottom + 32,
+        paddingHorizontal: 16,
       }}
     >
-      <View style={styles.section}>
-        <SectionLabel theme={theme}>Sobre a Morada AO</SectionLabel>
+      <View style={styles.hero}>
+        <ThemedText style={styles.wordmark}>
+          MORADA<ThemedText style={[styles.wordmark, { color: ORANGE }]}>·</ThemedText>AO
+        </ThemedText>
+        <ThemedText style={styles.heroTitle}>A tua morada digital em Angola.</ThemedText>
+        <ThemedText style={styles.heroMeta}>Versão {appVersion}</ThemedText>
+      </View>
 
-        <View style={[styles.card, { backgroundColor: cardBg }]}>
-          <View style={styles.aboutHeader}>
-            <View style={[styles.aboutIcon, { backgroundColor: Colors.light.primary }]}>
-              <Feather name="map-pin" size={28} color="#FFFFFF" />
-            </View>
-            <ThemedText style={styles.aboutTitle}>Morada AO</ThemedText>
-            <ThemedText style={[styles.aboutSubtitle, { color: theme.textSecondary }]}>
-              A tua morada digital em Angola
+      <Section title="LOCALIZAÇÃO" color={theme.textSecondary}>
+        <View style={[styles.card, { backgroundColor: cardBg, borderColor: theme.border }]}>
+          <Row
+            icon="crosshair"
+            label="Precisão da localização"
+            value={locValue}
+            valueColor={locWarn ? ORANGE : theme.textSecondary}
+            onPress={() => {
+              track("location_settings_opened");
+              Linking.openSettings();
+            }}
+          />
+          {locWarn ? (
+            <ThemedText style={[styles.note, { color: theme.textSecondary }]}>
+              {loc === "aproximada"
+                ? "Com a localização aproximada o código pode falhar centenas de metros. Ativa a localização exata nas definições do telemóvel."
+                : "A app precisa da localização para calcular o teu código."}
             </ThemedText>
-            <View style={[styles.versionPill, { backgroundColor: theme.backgroundTertiary }]}>
-              <ThemedText style={[styles.versionText, { color: theme.textSecondary }]}>
-                Versão {appVersion}
-              </ThemedText>
-            </View>
-          </View>
+          ) : null}
         </View>
-      </View>
+      </Section>
 
-      <View style={styles.section}>
-        <SectionLabel theme={theme}>Ferramentas</SectionLabel>
-
-        <View style={[styles.card, { backgroundColor: cardBg }]}>
-          <LinkRow
-            icon="bookmark"
-            label="Minhas moradas"
-            onPress={() => {
-              Haptics.selectionAsync();
-              navigation.navigate("Favorites");
-            }}
-            theme={theme}
-          />
-          <Separator theme={theme} />
-
-          <LinkRow
-            icon="search"
-            label="Procurar por código"
-            onPress={() => {
-              Haptics.selectionAsync();
-              navigation.navigate("Search");
-            }}
-            theme={theme}
-          />
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <SectionLabel theme={theme}>Ajuda e Suporte</SectionLabel>
-
-        <View style={[styles.card, { backgroundColor: cardBg }]}>
-          <LinkRow
+      <Section title="AJUDA" color={theme.textSecondary}>
+        <View style={[styles.card, { backgroundColor: cardBg, borderColor: theme.border }]}>
+          <Row
             icon="help-circle"
-            label="Como funciona o Plus Code?"
-            onPress={() => openUrl("https://plus.codes/howitworks", "plus_codes_info")}
-            theme={theme}
+            label="Como funciona"
+            onPress={() => openUrl(`${SITE}/#funciona`, "how_it_works_opened")}
+            external
           />
-          <Separator theme={theme} />
-
-          <LinkRow
-            icon="star"
-            label="Avaliar a Morada AO"
-            onPress={handleRate}
-            theme={theme}
+          <Divider color={theme.border} />
+          <Row
+            icon="message-circle"
+            label="Perguntas frequentes"
+            onPress={() => openUrl(`${SITE}/#perguntas`, "faq_opened")}
+            external
           />
-          <Separator theme={theme} />
-
-          <LinkRow
+          <Divider color={theme.border} />
+          <Row
             icon="mail"
-            label="Contactar / Feedback"
+            label="Falar connosco"
+            value="Email"
+            valueColor={theme.textSecondary}
             onPress={handleContact}
             onLongPress={handleCopyEmail}
-            theme={theme}
           />
         </View>
-      </View>
+      </Section>
 
-      <View style={styles.section}>
-        <SectionLabel theme={theme}>Legal</SectionLabel>
-
-        <View style={[styles.card, { backgroundColor: cardBg }]}>
-          <LinkRow
+      <Section title="LEGAL" color={theme.textSecondary}>
+        <View style={[styles.card, { backgroundColor: cardBg, borderColor: theme.border }]}>
+          <Row
             icon="lock"
             label="Política de privacidade"
-            onPress={() => openUrl(PRIVACY_URL, "privacy_opened")}
-            theme={theme}
+            onPress={() => openUrl(`${SITE}/privacidade`, "privacy_opened")}
+            external
           />
-          <Separator theme={theme} />
-
-          <LinkRow
+          <Divider color={theme.border} />
+          <Row
             icon="file-text"
             label="Termos de uso"
-            onPress={() => openUrl("https://rasgadolabs.com/morada-ao/terms", "terms_opened")}
-            theme={theme}
+            onPress={() => openUrl(`${SITE}/termos`, "terms_opened")}
+            external
           />
         </View>
-      </View>
+      </Section>
 
-      <View style={styles.section}>
-        <SectionLabel theme={theme}>O que saber</SectionLabel>
-
-        <View style={[styles.card, { backgroundColor: cardBg }]}>
-          <Tip color={Colors.light.success} theme={theme}>
-            A morada segura funciona sempre, mesmo sem nome de rua.
-          </Tip>
-          <Tip color={Colors.light.primary} theme={theme}>
-            O código curto é mais fácil de lembrar, mas precisa do nome do bairro.
-          </Tip>
-          <Tip color={Colors.light.primary} theme={theme}>
-            O link que partilhas usa sempre o código completo para funcionar em qualquer lugar.
-          </Tip>
-        </View>
-      </View>
-
-      <View style={styles.footer}>
-        <ThemedText style={[styles.footerLove, { color: theme.textMuted }]}>
-          Feito em Angola 🇦🇴 com amor
+      <Pressable onPress={() => openUrl(SITE, "site_opened")} style={styles.footer}>
+        <ThemedText style={[styles.footerText, { color: theme.textSecondary }]}>
+          moradaao.com · Feito em Angola
         </ThemedText>
-      </View>
+      </Pressable>
     </ScrollView>
   );
 }
 
-function SectionLabel({ children, theme }: { children: React.ReactNode; theme: any }) {
+function Section({ title, color, children }: { title: string; color: string; children: React.ReactNode }) {
   return (
-    <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+    <View style={styles.section}>
+      <ThemedText style={[styles.sectionTitle, { color }]}>{title}</ThemedText>
       {children}
-    </ThemedText>
-  );
-}
-
-function Separator({ theme }: { theme: any }) {
-  return <View style={[styles.separator, { backgroundColor: theme.border }]} />;
-}
-
-function LinkRow({
-  icon,
-  label,
-  onPress,
-  onLongPress,
-  theme,
-}: {
-  icon: keyof typeof Feather.glyphMap;
-  label: string;
-  onPress: () => void;
-  onLongPress?: () => void;
-  theme: any;
-}) {
-  return (
-    <Pressable
-      style={({ pressed }) => [styles.linkRow, { opacity: pressed ? 0.6 : 1 }]}
-      onPress={onPress}
-      onLongPress={onLongPress}
-    >
-      <View style={styles.linkContent}>
-        <View style={[styles.iconCircle, { backgroundColor: Colors.light.primary + "15" }]}>
-          <Feather name={icon} size={18} color={Colors.light.primary} />
-        </View>
-        <ThemedText style={styles.linkLabel}>{label}</ThemedText>
-      </View>
-      <Feather name="chevron-right" size={18} color={theme.textMuted} />
-    </Pressable>
-  );
-}
-
-function Tip({
-  color,
-  theme,
-  children,
-}: {
-  color: string;
-  theme: any;
-  children: React.ReactNode;
-}) {
-  return (
-    <View style={styles.tipItem}>
-      <View style={[styles.tipBullet, { backgroundColor: color }]} />
-      <ThemedText style={[styles.tipText, { color: theme.textSecondary }]}>
-        {children}
-      </ThemedText>
     </View>
   );
 }
 
+function Divider({ color }: { color: string }) {
+  return <View style={[styles.divider, { backgroundColor: color }]} />;
+}
+
+function Row({
+  icon,
+  label,
+  value,
+  valueColor,
+  external,
+  onPress,
+  onLongPress,
+}: {
+  icon: keyof typeof Feather.glyphMap;
+  label: string;
+  value?: string;
+  valueColor?: string;
+  external?: boolean;
+  onPress: () => void;
+  onLongPress?: () => void;
+}) {
+  const { theme } = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}
+    >
+      <View style={styles.rowIcon}>
+        <Feather name={icon} size={17} color="#FFFFFF" />
+      </View>
+      <ThemedText style={styles.rowLabel}>{label}</ThemedText>
+      {value ? <ThemedText style={[styles.rowValue, { color: valueColor }]}>{value}</ThemedText> : null}
+      <Feather name={external ? "arrow-up-right" : "chevron-right"} size={18} color={theme.textSecondary} />
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  section: { marginBottom: Spacing["2xl"] },
-  sectionTitle: {
-    fontSize: 12,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: Spacing.sm,
-    marginLeft: Spacing.xs,
-    fontWeight: "600",
+  hero: { backgroundColor: NAVY, borderRadius: 22, padding: 20 },
+  wordmark: { fontWeight: "700", fontSize: 13, letterSpacing: 1.8, color: "#FFFFFF" },
+  heroTitle: {
+    fontSize: 24,
+    lineHeight: 29,
+    fontWeight: "800",
+    letterSpacing: -0.4,
+    color: "#FFFFFF",
+    marginTop: 18,
   },
-  card: {
-    borderRadius: BorderRadius.md,
-    overflow: "hidden",
-  },
-  aboutHeader: {
-    paddingVertical: Spacing["2xl"],
-    paddingHorizontal: Spacing.lg,
-    alignItems: "center",
-    gap: Spacing.sm,
-  },
-  aboutIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: Spacing.sm,
-  },
-  aboutTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-  },
-  aboutSubtitle: {
-    fontSize: 14,
-    textAlign: "center",
-  },
-  versionPill: {
-    marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-  },
-  versionText: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  separator: {
-    height: 1,
-    marginLeft: 60,
-  },
-  linkRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-  },
-  linkContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.md,
-    flex: 1,
-  },
-  iconCircle: {
+  heroMeta: { fontFamily: MONO, fontSize: 12, color: "rgba(255,255,255,0.62)", marginTop: 8 },
+
+  section: { marginTop: 24 },
+  sectionTitle: { fontFamily: MONO, fontSize: 11, letterSpacing: 2, marginBottom: 8, marginLeft: 4 },
+  card: { borderRadius: 18, borderWidth: 1, paddingHorizontal: 14 },
+  row: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 56 },
+  rowIcon: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 10,
+    backgroundColor: NAVY,
     alignItems: "center",
     justifyContent: "center",
   },
-  linkLabel: {
-    fontSize: 16,
-    flex: 1,
-  },
-  tipItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.md,
-  },
-  tipBullet: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginTop: 8,
-  },
-  tipText: {
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  footer: {
-    alignItems: "center",
-    paddingTop: Spacing.xl,
-  },
-  footerLove: {
-    fontSize: 13,
-  },
+  rowLabel: { flex: 1, fontSize: 15, fontWeight: "600" },
+  rowValue: { fontSize: 14, fontWeight: "600" },
+  divider: { height: StyleSheet.hairlineWidth, marginLeft: 44 },
+  note: { fontSize: 13, lineHeight: 19, paddingBottom: 14, marginTop: -4, marginLeft: 44 },
+
+  footer: { alignItems: "center", marginTop: 28 },
+  footerText: { fontSize: 13 },
 });
