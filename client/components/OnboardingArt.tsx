@@ -7,9 +7,22 @@ import { Colors, Spacing, BorderRadius, Fonts } from "@/constants/theme";
 
 type Variant = "map" | "offline" | "share";
 
-export function OnboardingArt({ variant }: { variant: Variant }) {
-  const monoFont = (Fonts as any)?.mono || "monospace";
+const C = Colors.light;
 
+function Codigo({ grande = false }: { grande?: boolean }) {
+  const mono = (Fonts as any)?.mono || "monospace";
+  return (
+    <View>
+      <ThemedText style={[grande ? styles.codeBig : styles.codeMid, { fontFamily: mono }]}>
+        <ThemedText style={[grande ? styles.codeBig : styles.codeMid, styles.plus, { fontFamily: mono }]}>+</ThemedText>
+        2Q3 Cazenga
+      </ThemedText>
+      <ThemedText style={[styles.codeFull, { fontFamily: mono }]}>6F3M576Q+2Q3</ThemedText>
+    </View>
+  );
+}
+
+export function OnboardingArt({ variant }: { variant: Variant }) {
   if (variant === "map") {
     return (
       <View style={styles.frame}>
@@ -19,17 +32,12 @@ export function OnboardingArt({ variant }: { variant: Variant }) {
             style={styles.illustration}
             resizeMode="contain"
           />
-          <View style={[styles.floatingPill, styles.pillTop]}>
-            <View style={styles.pillDot} />
-            <ThemedText style={[styles.pillText, { fontFamily: monoFont }]}>
-              6F3M576Q+2Q3
-            </ThemedText>
-          </View>
-          <View style={[styles.floatingPill, styles.pillBottom]}>
-            <View style={styles.pillDot} />
-            <ThemedText style={[styles.pillText, { fontFamily: monoFont }]}>
-              7F2Q4W6V+XR
-            </ThemedText>
+          <View style={styles.codeCard}>
+            <Codigo grande />
+            <View style={styles.badge}>
+              <Feather name="shield" size={11} color={C.success} />
+              <ThemedText style={styles.badgeText}>FUNCIONA SEMPRE</ThemedText>
+            </View>
           </View>
         </View>
       </View>
@@ -39,53 +47,52 @@ export function OnboardingArt({ variant }: { variant: Variant }) {
   if (variant === "offline") {
     return (
       <View style={styles.frame}>
-        <View style={[styles.frameInner, styles.dottedFrame]}>
-          <View style={styles.offlineIcons}>
-            <View style={[styles.circleIcon, styles.bigCircle, { backgroundColor: Colors.light.primary }]}>
-              <Feather name="map-pin" size={44} color="#FFFFFF" />
-            </View>
-            <View style={styles.wifiCluster}>
-              <View style={[styles.smallCircle, { backgroundColor: Colors.light.warning }]}>
-                <Feather name="wifi-off" size={16} color="#FFFFFF" />
-              </View>
-              <View style={[styles.smallCircle, { backgroundColor: Colors.light.success }]}>
-                <Feather name="check" size={16} color="#FFFFFF" />
-              </View>
+        <View style={styles.frameInner}>
+          <View style={styles.offlineChip}>
+            <Feather name="wifi-off" size={13} color={C.warning} />
+            <ThemedText style={styles.offlineChipText}>Sem rede</ThemedText>
+          </View>
+          <View style={styles.pinCircle}>
+            <Feather name="map-pin" size={40} color="#FFFFFF" />
+          </View>
+          <View style={styles.codeCard}>
+            <Codigo />
+            <View style={styles.checkRow}>
+              <Feather name="check-circle" size={14} color={C.success} />
+              <ThemedText style={styles.checkText}>Calculado no telemóvel</ThemedText>
             </View>
           </View>
-          <ThemedText style={[styles.floatingLabel, { fontFamily: monoFont }]}>
-            Cazenga · Viana · Benguela
-          </ThemedText>
         </View>
       </View>
     );
   }
 
-  // share
   return (
     <View style={styles.frame}>
-      <View style={styles.frameInner}>
-        <View style={styles.shareStack}>
-          <View style={[styles.shareBubble, styles.bubbleGreen]}>
-            <Feather name="message-circle" size={20} color="#FFFFFF" />
-          </View>
-          <View style={[styles.shareBubble, styles.bubbleOrange]}>
-            <Feather name="smartphone" size={20} color="#FFFFFF" />
-          </View>
-          <View style={[styles.shareBubble, styles.bubbleRed]}>
-            <Feather name="share-2" size={22} color="#FFFFFF" />
-          </View>
+      <View style={[styles.frameInner, styles.chatFrame]}>
+        <View style={styles.msgIn}>
+          <ThemedText style={styles.msgInText}>Onde fica a tua casa?</ThemedText>
         </View>
-        <View style={styles.chatBubble}>
-          <ThemedText style={[styles.chatText, { fontFamily: monoFont }]}>
-            6F3M576Q+2Q3
-          </ThemedText>
-          <ThemedText style={styles.chatHint}>Cazenga Popular</ThemedText>
+        <View style={styles.msgOut}>
+          <ThemedText style={styles.msgLabel}>A minha morada:</ThemedText>
+          <Codigo />
+          <View style={styles.mapsLink}>
+            <Feather name="external-link" size={12} color={C.primary} />
+            <ThemedText style={styles.mapsLinkText}>Abrir no Google Maps</ThemedText>
+          </View>
         </View>
       </View>
     </View>
   );
 }
+
+const sombra = {
+  shadowColor: "#0D1A2A",
+  shadowOpacity: 0.1,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 4,
+};
 
 const styles = StyleSheet.create({
   frame: {
@@ -94,24 +101,55 @@ const styles = StyleSheet.create({
     marginBottom: Spacing["2xl"],
   },
   frameInner: {
-    width: 280,
-    height: 240,
+    width: 300,
+    height: 270,
     borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.light.primary + "0D",
+    backgroundColor: C.primarySoft,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
     position: "relative",
   },
-  dottedFrame: {
-    backgroundColor: Colors.light.secondary + "15",
-  },
   illustration: {
-    width: 220,
-    height: 180,
+    width: 170,
+    height: 135,
+    marginBottom: 118,
   },
-  floatingPill: {
+  codeCard: {
     position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: Spacing.sm,
+    ...sombra,
+  },
+  codeBig: { fontSize: 17, fontWeight: "700", color: C.text, letterSpacing: 0.3 },
+  codeMid: { fontSize: 16, fontWeight: "700", color: C.text, letterSpacing: 0.5 },
+  plus: { color: C.primary },
+  codeFull: { fontSize: 11, color: C.textSecondary, marginTop: 2, letterSpacing: 0.5 },
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: C.successSoft,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.full,
+  },
+  badgeText: { fontSize: 9, fontWeight: "700", color: C.success, letterSpacing: 0.4 },
+
+  offlineChip: {
+    position: "absolute",
+    top: 16,
+    right: 16,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
@@ -119,101 +157,49 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: BorderRadius.full,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    ...sombra,
   },
-  pillTop: { top: 22, right: 20 },
-  pillBottom: { bottom: 22, left: 20 },
-  pillDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.light.primary,
+  offlineChipText: { fontSize: 12, fontWeight: "600", color: C.text },
+  pinCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: C.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 80,
   },
-  pillText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#1A1A1A",
-    letterSpacing: 0.5,
-  },
+  checkRow: { flexDirection: "row", alignItems: "center", gap: 4, flexShrink: 1 },
+  checkText: { fontSize: 11, fontWeight: "600", color: C.success },
 
-  offlineIcons: {
-    alignItems: "center",
-    position: "relative",
-  },
-  circleIcon: {
-    alignItems: "center",
+  chatFrame: {
+    alignItems: "stretch",
     justifyContent: "center",
+    paddingHorizontal: 16,
+    gap: Spacing.sm,
   },
-  bigCircle: {
-    width: 108,
-    height: 108,
-    borderRadius: 54,
-  },
-  smallCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 3,
-    borderColor: "#FFFFFF",
-  },
-  wifiCluster: {
-    flexDirection: "row",
-    gap: -8,
-    position: "absolute",
-    bottom: -10,
-    right: -24,
-  },
-  floatingLabel: {
-    position: "absolute",
-    bottom: 18,
-    fontSize: 11,
-    color: Colors.light.secondary,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-  },
-
-  shareStack: {
-    flexDirection: "row",
-    gap: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  shareBubble: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  bubbleGreen: { backgroundColor: "#25D366" },
-  bubbleOrange: { backgroundColor: Colors.light.secondary },
-  bubbleRed: { backgroundColor: Colors.light.primary },
-  chatBubble: {
+  msgIn: {
+    alignSelf: "flex-start",
     backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    borderBottomLeftRadius: 4,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: BorderRadius.md,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    ...sombra,
   },
-  chatText: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#1A1A1A",
-    letterSpacing: 1,
+  msgInText: { fontSize: 14, color: C.text },
+  msgOut: {
+    alignSelf: "flex-end",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    borderBottomRightRadius: 4,
+    borderWidth: 1.5,
+    borderColor: C.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    ...sombra,
   },
-  chatHint: {
-    fontSize: 11,
-    color: Colors.light.textSecondary,
-    marginTop: 2,
-  },
+  msgLabel: { fontSize: 12, color: C.textSecondary, marginBottom: 4 },
+  mapsLink: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 8 },
+  mapsLinkText: { fontSize: 12, fontWeight: "700", color: C.primary },
 });

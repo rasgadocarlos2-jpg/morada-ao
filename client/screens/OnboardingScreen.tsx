@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import * as Location from "expo-location";
 
 import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/Button";
@@ -38,30 +39,30 @@ const SLIDES: Slide[] = [
     variant: "map",
     title: "A tua morada digital",
     description:
-      "Em qualquer canto de Angola, mesmo sem nome de rua, há sempre uma morada. Nós ajudamos-te a encontrá-la.",
+      "Em qualquer canto de Angola, mesmo onde a rua não tem nome, o teu lugar tem um código único.",
     features: [
-      { icon: "map-pin", text: "Preciso ao metro" },
-      { icon: "zap", text: "Gerado em segundos" },
+      { icon: "crosshair", text: "Cerca de 3 metros" },
+      { icon: "map", text: "Funciona no Google Maps" },
     ],
   },
   {
     variant: "offline",
-    title: "Funciona sempre",
+    title: "Funciona sem rede",
     description:
-      "Usa Plus Codes do Google — um sistema internacional. Depois do primeiro uso, continua a funcionar offline.",
+      "O código é calculado no teu telemóvel, a partir do GPS. Só o nome do bairro precisa de internet.",
     features: [
-      { icon: "wifi-off", text: "Sem internet depois da 1ª vez" },
-      { icon: "globe", text: "Cobertura em toda Angola" },
+      { icon: "wifi-off", text: "Sem dados móveis" },
+      { icon: "globe", text: "Em toda Angola" },
     ],
   },
   {
     variant: "share",
     title: "Partilha com qualquer um",
     description:
-      "Manda a tua morada por WhatsApp, SMS ou cartão visual. Perfeito para entregas, Uber, emergências e visitas.",
+      "Envia a tua morada por WhatsApp ou SMS. Quem recebe abre o código no Google Maps e chega ao sítio.",
     features: [
-      { icon: "message-circle", text: "WhatsApp, SMS, email" },
-      { icon: "image", text: "Também em imagem partilhável" },
+      { icon: "message-circle", text: "WhatsApp, SMS ou imagem" },
+      { icon: "user-check", text: "Quem recebe não precisa da app" },
     ],
   },
 ];
@@ -81,9 +82,14 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     onComplete();
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     Haptics.selectionAsync();
     if (isLast) {
+      // Pede a localização aqui; se for recusada, a App mostra o ecrã de permissão.
+      try {
+        const r = await Location.requestForegroundPermissionsAsync();
+        track("location_permission_response", { granted: r.granted, can_ask_again: r.canAskAgain, from: "onboarding" });
+      } catch {}
       finish();
     } else {
       const next = index + 1;
@@ -157,8 +163,11 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
           onPress={handleNext}
           style={[styles.button, { backgroundColor: theme.primary }]}
         >
-          {isLast ? "Vamos a isso" : "Continuar"}
+          {isLast ? "Mostrar a minha morada" : "Continuar"}
         </Button>
+        <ThemedText style={[styles.privacy, { color: theme.textMuted, opacity: isLast ? 1 : 0 }]}>
+          Pedimos a localização só para calcular o teu código.
+        </ThemedText>
       </View>
     </View>
   );
@@ -179,7 +188,7 @@ function SlideView({
     <View
       style={[
         styles.slide,
-        { width: SCREEN_WIDTH, paddingTop: topInset + Spacing["4xl"] },
+        { width: SCREEN_WIDTH, paddingTop: topInset + 72 },
       ]}
     >
       <View>
@@ -197,10 +206,8 @@ function SlideView({
 
         <View style={styles.features}>
           {slide.features.map((f, i) => (
-            <View key={i} style={styles.featureItem}>
-              <View style={[styles.featureIcon, { backgroundColor: theme.iconBg }]}>
-                <Feather name={f.icon} size={14} color={theme.primary} />
-              </View>
+            <View key={i} style={[styles.featureItem, { backgroundColor: theme.backgroundSecondary }]}>
+              <Feather name={f.icon} size={14} color={theme.primary} />
               <ThemedText style={[styles.featureText, { color: theme.text }]}>
                 {f.text}
               </ThemedText>
@@ -242,27 +249,27 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   features: {
-    alignSelf: "stretch",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
     gap: Spacing.sm,
-    marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
   },
   featureItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
-  },
-  featureIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: BorderRadius.full,
   },
   featureText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  privacy: {
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: -Spacing.md,
   },
   footer: {
     paddingHorizontal: Spacing.xl,
