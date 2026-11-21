@@ -17,3 +17,8 @@
 ## Páginas
 
 - [Página principal](https://moradaao.com/): o problema, como funciona, para quem é e perguntas frequentes.
+- [Blog](https://moradaao.com/blog): guias práticos sobre moradas e entregas em Angola.
+- [Código postal em Angola](https://moradaao.com/blog/codigo-postal-angola): Angola não tem código postal em uso; o que preencher em formulários e como indicar o local exato.
+- [Morada de entrega sem nome de rua](https://moradaao.com/blog/morada-de-entrega-sem-nome-de-rua): o que enviar para uma entrega chegar à porta certa.
+- [Política de privacidade](https://moradaao.com/privacidade)
+- [Termos de uso](https://moradaao.com/termos)
