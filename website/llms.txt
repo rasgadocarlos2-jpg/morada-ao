@@ -20,5 +20,11 @@
 - [Blog](https://moradaao.com/blog): guias práticos sobre moradas e entregas em Angola.
 - [Código postal em Angola](https://moradaao.com/blog/codigo-postal-angola): Angola não tem código postal em uso; o que preencher em formulários e como indicar o local exato.
 - [Morada de entrega sem nome de rua](https://moradaao.com/blog/morada-de-entrega-sem-nome-de-rua): o que enviar para uma entrega chegar à porta certa.
+- [O que é um Plus Code e como abri-lo no Google Maps](https://moradaao.com/blog/o-que-e-um-plus-code): Um Plus Code é um código aberto que identifica qualquer ponto do mundo com cerca de 3 metros. Vê como se lê e como o abres no Google Maps.
+- [Como explicar ao estafeta ou ao táxi onde fica a tua casa](https://moradaao.com/blog/explicar-ao-estafeta-onde-fica-a-casa): Uma mensagem com o código, o bairro, uma referência e o telefone resolve a maior parte das entregas e viagens. Vê o modelo e quando enviá-lo.
+- [Porque o GPS do telemóvel falha e como melhorar a precisão](https://moradaao.com/blog/gps-do-telemovel-impreciso): Dentro de casa, entre prédios ou com a localização aproximada, o GPS pode errar dezenas de metros. Vê como melhorar a precisão antes de partilhar a morada.
+- [Morada digital para negócios: como pôr a tua no cartão, no Instagram e no WhatsApp](https://moradaao.com/blog/morada-digital-para-negocios): Clientes que se perdem a caminho da loja são clientes que não chegam. Vê onde pôr o código da tua morada: cartão, Instagram, WhatsApp Business e montra.
+- [Como receber encomendas do estrangeiro em Angola](https://moradaao.com/blog/receber-encomendas-do-estrangeiro-em-angola): Sem código postal, a morada para encomendas internacionais tem de ser clara e ter telefone e email. Vê como preencher e o que confirmar antes de comprar.
+- [Código curto ou código completo: qual partilhar](https://moradaao.com/blog/codigo-curto-ou-completo): O código curto (+2Q3 Cazenga) é fácil de dizer; o completo (6F3M576Q+2Q3) funciona em qualquer lado. Vê quando usar cada um.
 - [Política de privacidade](https://moradaao.com/privacidade)
 - [Termos de uso](https://moradaao.com/termos)
